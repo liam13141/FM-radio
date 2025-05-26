@@ -1,62 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Radio Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        h1 {
-            font-weight: 700;
-            color: #333;
-        }
-        ::backdrop
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FM Radio Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: #121212;
+    font-family: 'Poppins', sans-serif;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 2rem;
+  }
 
-        
-    </style>
+  h1 {
+    font-weight: 600;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #00c6ff;
+    text-shadow: 0 0 8px #00c6ff88;
+  }
+
+  .radio-container {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .radio-card {
+    background: #1f1f1f;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00c6ff22;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .radio-card:hover, .radio-card:focus-within {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px #00c6ffaa;
+  }
+
+  .radio-logo {
+    width: 120px;
+    height: 120px;
+    background: #00c6ff;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #121212;
+    user-select: none;
+    box-shadow: 0 0 10px #00c6ffbb;
+  }
+
+  .radio-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  /* Custom player controls */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+  button.play-pause {
+    background: #00c6ff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    color: #121212;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 0 8px #00c6ffaa;
+    transition: background 0.25s ease;
+  }
+  button.play-pause:hover {
+    background: #00a3cc;
+  }
+  .status {
+    flex-grow: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: none;
+  }
+  input[type="range"].volume-slider {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 6px;
+    border-radius: 5px;
+    background: #333;
+    cursor: pointer;
+    box-shadow: 0 0 5px #00c6ff88;
+  }
+  input[type="range"].volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #00c6ff;
+    cursor: pointer;
+    box-shadow: 0 0 8px #00c6ffcc;
+    margin-top: -6px;
+  }
+  input[type="range"].volume-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #00c6ff;
+    cursor: pointer;
+    box-shadow: 0 0 8px #00c6ffcc;
+  }
+
+  footer {
+    margin-top: auto;
+    text-align: center;
+    color: #555;
+    font-size: 0.9rem;
+    user-select: none;
+  }
+
+  /* Screen reader only helper */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
+</style>
 </head>
 <body>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Radio Player</title>
-</head>
-<body><h1>FM radio</h1>
-    <h1>_____________</h1>
-    <h1>Big 98.5 FM Radio</h1>
-    <audio controls>
-        <source src=" https://live.amperwave.net/manifest/audacy-wrxlhd2aac-imc" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Radio Player</title>
-    <h1>-----------------------</h1>
-</head>
-<body>
-    <h1>classic rock 96.5 FM Radio</h1>
-    <audio controls>
-        <source src=" https://stream.rcs.revma.com/98mxmkcw57uvv" type="audio/mpeg">
-        Your browser does not support the audio element
-    </audio><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM Radio Player</title>
-    <h1>-----------------------</h1>
-</head>
-<body>
-    <h1>K59 95.3</h1>
-    <audio controls>
-        <source src=" https://stream.rcs.revma.com/uqgf3huv57uvv" type="audio/mpeg">
-        Your browser does not support the audio element
-    </audio>
-    <h1>----------------------</h1>
-    
+  <h1>FM Radio Player</h1>
+  <div class="radio-container">
+
+    <section class="radio-card" tabindex="0" aria-label="Big 98.5 FM Radio">
+      <div class="radio-logo">98.5</div>
+      <h2 class="radio-title">Big 98.5 FM Radio</h2>
+      <audio id="audio1" preload="none">
+        <source src="https://live.amperwave.net/manifest/audacy-wrxlhd2aac-imc" type="audio/mpeg" />
+      </audio>
+      <div class="player-controls">
+        <button class="play-pause" aria-label="Play or Pause Big 98.5 FM Radio" data-audio="audio1">&#9658;</button>
+        <div class="status" id="status1">Paused</div>
+        <input type="range" class="volume-slider" aria-label="Volume control for Big 98.5 FM Radio" data-audio="audio1" min="0" max="1" step="0.01" value="0.5" />
+      </div>
+    </section>
+
+    <section class="radio-card" tabindex="0" aria-label="Classic Rock 96.5 FM Radio">
+      <div class="radio-logo">96.5</div>
+      <h2 class="radio-title">Classic Rock 96.5 FM Radio</h2>
+      <audio id="audio2" preload="none">
+        <source src="https://stream.rcs.revma.com/98mxmkcw57uvv" type="audio/mpeg" />
+      </audio>
+      <div class="player-controls">
+        <button class="play-pause" aria-label="Play or Pause Classic Rock 96.5 FM Radio" data-audio="audio2">&#9658;</button>
+        <div class="status" id="status2">Paused</div>
+        <input type="range" class="volume-slider" aria-label="Volume control for Classic Rock 96.5 FM Radio" data-audio="audio2" min="0" max="1" step="0.01" value="0.5" />
+      </div>
+    </section>
+
+    <section class="radio-card" tabindex="0" aria-label="K59 95.3 FM Radio">
+      <div class="radio-logo">95.3</div>
+      <h2 class="radio-title">K95 95.3 FM Radio</h2>
+      <audio id="audio3" preload="none">
+        <source src="https://stream.rcs.revma.com/uqgf3huv57uvv" type="audio/mpeg" />
+      </audio>
+      <div class="player-controls">
+        <button class="play-pause" aria-label="Play or Pause K59 95.3 FM Radio" data-audio="audio3">&#9658;</button>
+        <div class="status" id="status3">Paused</div>
+        <input type="range" class="volume-slider" aria-label="Volume control for K59 95.3 FM Radio" data-audio="audio3" min="0" max="1" step="0.01" value="0.5" />
+      </div>
+    </section>
+
+  </div>
+
+  <footer>© 2025 FM Radio Player. All rights reserved.</footer>
+
+  <script>
+    // Play/pause and volume functionality
+    document.querySelectorAll('button.play-pause').forEach(button => {
+      button.addEventListener('click', () => {
+        const audioId = button.dataset.audio;
+        const audio = document.getElementById(audioId);
+        const status = document.getElementById('status' + audioId.slice(-1));
+
+        // Pause all other audios
+        document.querySelectorAll('audio').forEach(a => {
+          if (a !== audio) {
+            a.pause();
+            const s = document.getElementById('status' + a.id.slice(-1));
+            s.textContent = 'Paused';
+            const btn = document.querySelector(`button.play-pause[data-audio=${a.id}]`);
+            btn.innerHTML = "&#9658;"; // Play symbol
+          }
+        });
+
+        if (audio.paused) {
+          audio.play();
+          status.textContent = 'Playing';
+          button.innerHTML = '&#10073;&#10073;'; // Pause symbol
+        } else {
+          audio.pause();
+          status.textContent = 'Paused';
+          button.innerHTML = '&#9658;'; // Play symbol
+        }
+      });
+    });
+
+    // Volume sliders
+    document.querySelectorAll('input.volume-slider').forEach(slider => {
+      slider.addEventListener('input', () => {
+        const audioId = slider.dataset.audio;
+        const audio = document.getElementById(audioId);
+        audio.volume = slider.value;
+      });
+
+      // Set initial volume
+      const audio = document.getElementById(slider.dataset.audio);
+      audio.volume = slider.value;
+    });
+  </script>
 </body>
 </html>
