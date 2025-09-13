@@ -82,13 +82,16 @@
 <body>
     <h3>thank you for trying my radio project!</h3>
   <header>
+    
     <div class="topbar" aria-label="Top Controls">
       <div class="brand">🎧 FM Radio Player</div>
       <span class="tag">Self-healing streams</span>
       <span class="tag">Error codes</span>
       <span class="tag">Favorites</span>
+
       <div class="toolbar">
         <input id="search" type="search" placeholder="Search stations… (/ to focus)" title="Press / to focus search" />
+        <button class="btn small" id="showChangelog" title="Show patch notes">What's New</button>
         <button class="btn small" id="toggleTheme" title="Toggle theme">Toggle Theme</button>
         <button class="btn small" id="stopAll" title="Stop all stations (S)">Stop All</button>
         <button class="btn small" id="muteAll" title="Mute all stations (M)">Mute All</button>
@@ -156,9 +159,37 @@
     </form>
   </dialog>
 
+  <!-- Patch Notes Dialog -->
+<dialog id="changelogDialog" aria-labelledby="changelogTitle">
+  <form method="dialog" id="changelogForm">
+    <h3 id="changelogTitle">What’s New</h3>
+    <div id="changelogBody" class="log" style="max-height:320px; overflow:auto; margin-top:8px"></div>
+
+    <div class="dialog-row" style="justify-content:space-between; align-items:center">
+      <label style="display:flex; gap:8px; align-items:center; font-size:.9rem; color:var(--muted)">
+        <input type="checkbox" id="showOnStartup" />
+        Show this when there’s a new version
+      </label>
+      <div style="display:flex; gap:8px">
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+
   <input type="file" id="importFile" accept="application/json" hidden />
 
 <script>
+/* =========================================================
+   FM Radio Player (v2) — Patched Core
+   - Fixes: lifecycle leaks, WebAudio disconnects,
+            reconnect timeout cleanup, MIME handling,
+            AudioContext resume, mixed-content guard,
+            XSS-safe templating, import validation,
+            attempt/reset logic, a11y improvements.
+   ========================================================= */
+
 /* ==============================
    Storage & Config
 ============================== */
@@ -170,6 +201,7 @@ const LS = {
   LAST: 'fm.last'                // {id}
 };
 
+// Default stations (unchanged)
 const DEFAULT_STATIONS = [
   { id: "wrxlhd2", name: "Big 98.5 FM", logo: "98.5",
     src: "https://live.amperwave.net/manifest/audacy-wrxlhd2aac-imc", mime: "audio/aac",
@@ -180,11 +212,15 @@ const DEFAULT_STATIONS = [
     src: "https://stream.rcs.revma.com/uqgf3huv57uvv", mime: "audio/mpeg", fallbacks: [], watchdog: 20, maxExp: 4 },
 ];
 
+/* ==============================
+   Utilities
+============================== */
+const MediaErrCodes = { 1:'ABORTED', 2:'NETWORK', 3:'DECODE', 4:'SRC_NOT_SUPPORTED' };
+
 function loadTheme(){
   const t = localStorage.getItem(LS.THEME) || 'dark';
   document.documentElement.setAttribute('data-theme', t);
 }
-
 function toggleTheme(){
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = cur === 'dark' ? 'light' : 'dark';
@@ -193,6 +229,7 @@ function toggleTheme(){
   toast(`Theme: ${next}`);
 }
 
+// Safer JSON helpers
 function loadFavorites(){
   try { return new Set(JSON.parse(localStorage.getItem(LS.FAVORITES) || '[]')); }
   catch { return new Set(); }
@@ -200,16 +237,36 @@ function loadFavorites(){
 function saveFavorites(set){
   localStorage.setItem(LS.FAVORITES, JSON.stringify([...set]));
 }
-
 function loadUserStations(){
-  try { return JSON.parse(localStorage.getItem(LS.STATIONS) || '[]'); }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS.STATIONS) || '[]');
+    return Array.isArray(raw) ? raw.filter(validateStation) : [];
+  } catch { return []; }
 }
 function saveUserStations(arr){
-  localStorage.setItem(LS.STATIONS, JSON.stringify(arr));
+  const clean = arr.filter(validateStation);
+  localStorage.setItem(LS.STATIONS, JSON.stringify(clean));
 }
 
+// Simple schema validator + normalizer
+function validateStation(s){
+  if (!s || typeof s !== 'object') return false;
+  if (!s.id || !s.name || !s.src) return false;
+  if (typeof s.id !== 'string' || typeof s.name !== 'string' || typeof s.src !== 'string') return false;
+  if (s.fallbacks && !Array.isArray(s.fallbacks)) return false;
+  // bounds
+  if (s.watchdog && (s.watchdog < 6 || s.watchdog > 120)) s.watchdog = 20;
+  if (s.maxExp && (s.maxExp < 2 || s.maxExp > 6)) s.maxExp = 4;
+  return true;
+}
+
+// XSS-safe text setter
+function setText(el, text){ if (el) el.textContent = String(text ?? ''); }
+
+// Optional cache buster (off by default to avoid breaking some providers)
+const ENABLE_CACHE_BUST = false;
 function fresh(url){
+  if (!ENABLE_CACHE_BUST) return url;
   const u = new URL(url, location.href);
   u.searchParams.set('_t', Date.now().toString());
   return u.toString();
@@ -231,7 +288,7 @@ const ERR_MSG = {
 };
 
 /* ==============================
-   UI Helpers
+   UI Elements (existing DOM)
 ============================== */
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');
@@ -252,6 +309,10 @@ const miniStop = document.getElementById('miniStop');
 const miniVol = document.getElementById('miniVol');
 
 const toastWrap = document.getElementById('toast');
+// a11y: announce to screen readers
+toastWrap.setAttribute('aria-live','polite');
+toastWrap.setAttribute('role','status');
+
 function toast(msg, ms=2200){
   const el = document.createElement('div'); el.className='msg'; el.textContent = msg;
   toastWrap.appendChild(el);
@@ -271,17 +332,22 @@ function allStations(){
   for(const s of userStations){ map.set(s.id, s); }
   return [...map.values()];
 }
-
 function nextIdFromName(name){
   return name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40) + '_' + Math.floor(Math.random()*1e4);
 }
 
 /* ==============================
-   Audio Graph (WebAudio for true EQ + soft reconnect)
+   Audio Graph
 ============================== */
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let sharedCtx = null; // lazy
 function getCtx(){ if(!sharedCtx) sharedCtx = new AudioCtx(); return sharedCtx; }
+async function resumeCtxIfSuspended(){
+  if (!sharedCtx) return;
+  if (sharedCtx.state === 'suspended'){
+    try { await sharedCtx.resume(); } catch {}
+  }
+}
 
 /* ==============================
    Radio Player Class
@@ -301,20 +367,18 @@ class RadioPlayer {
     this.mount = mount;
     this.onFocus = onFocus;
 
-    // Debounce + warmup + countdown
+    // State
     this._reconnectTimeoutId = null;
     this._inReconnect = false;
     this._warmupUntil = 0;
     this._lastCt = 0;
-    this.watchdogSecs = this.station.watchdog;   // configurable watchdog
-    this.maxExp = this.station.maxExp;           // 1–64s
+    this.watchdogSecs = this.station.watchdog;
+    this.maxExp = this.station.maxExp;
     this.attempt = 0;
 
     this.isUserPaused = true;
     this._lastTimeUpdate = 0;
     this._watchdogTimer = null;
-
-    // countdown
     this._countdownTimer = null;
     this._countdownUntil = 0;
 
@@ -338,49 +402,67 @@ class RadioPlayer {
   render(){
     this.mount.className = 'card';
     this.mount.tabIndex = 0;
-    this.mount.innerHTML = `
-      <div class="row">
-        <div class="logo" data-role="logo">${this.station.logo || 'FM'}</div>
-        <div class="title" data-role="title">${this.station.name}</div>
-        <button class="fav" data-role="fav" aria-pressed="${favorites.has(this.station.id)}" title="Toggle favorite">★</button>
-        <span class="pill" data-role="pill">Idle</span>
-      </div>
-      <div class="row controls">
-        <button class="btn main" data-role="play">▶ Play</button>
-        <button class="btn" data-role="reconnect" title="Reconnect now">↻ Reconnect</button>
-        <button class="btn ghost" data-role="stop" title="Stop">■ Stop</button>
-        <input class="vol" data-role="vol" type="range" min="0" max="1" step="0.01" value="${loadVolume()}"/>
-        <span class="badge" data-role="err">OK</span>
-        <div class="tool">
-          <button class="btn small" data-role="edit" title="Edit">Edit</button>
-        </div>
-      </div>
-      <div class="row" style="gap:14px">
-        <div class="eq" aria-label="Live levels" data-role="eq">${'<div class="bar"></div>'.repeat(24)}</div>
-        <span class="badge" title="Current endpoint" data-role="endpoint">EP 1/${this.endpoints.length}</span>
-        <span class="badge" title="Stream uptime" data-role="uptime">00:00</span>
-        <span class="badge" title="Next reconnect" data-role="nx">—</span>
-      </div>
-      <details>
-        <summary>Diagnostics / Log</summary>
-        <div class="log" data-role="log"></div>
-      </details>
-    `;
+
+    // Build DOM safely (no user HTML injection)
+    const rowTop = document.createElement('div'); rowTop.className = 'row';
+    const logo = document.createElement('div'); logo.className = 'logo'; logo.dataset.role='logo';
+    setText(logo, this.station.logo || 'FM');
+    const title = document.createElement('div'); title.className='title'; title.dataset.role='title';
+    setText(title, this.station.name);
+    const favBtn = document.createElement('button'); favBtn.className='fav'; favBtn.dataset.role='fav';
+    favBtn.setAttribute('aria-pressed', String(favorites.has(this.station.id)));
+    favBtn.setAttribute('aria-label','Toggle favorite');
+    favBtn.title='Toggle favorite';
+    favBtn.textContent='★';
+    const pill = document.createElement('span'); pill.className='pill'; pill.dataset.role='pill'; setText(pill,'Idle');
+
+    rowTop.append(logo,title,favBtn,pill);
+
+    const rowCtrls = document.createElement('div'); rowCtrls.className='row controls';
+    const btnPlay = document.createElement('button'); btnPlay.className='btn main'; btnPlay.dataset.role='play'; btnPlay.textContent='▶ Play'; btnPlay.setAttribute('aria-label','Play or Pause');
+    const btnRe = document.createElement('button'); btnRe.className='btn'; btnRe.dataset.role='reconnect'; btnRe.title='Reconnect now'; btnRe.textContent='↻ Reconnect';
+    const btnStop = document.createElement('button'); btnStop.className='btn ghost'; btnStop.dataset.role='stop'; btnStop.title='Stop'; btnStop.textContent='■ Stop';
+    const vol = document.createElement('input'); vol.className='vol'; vol.dataset.role='vol'; vol.type='range'; vol.min='0'; vol.max='1'; vol.step='0.01'; vol.value=String(loadVolume()); vol.setAttribute('aria-label','Volume');
+    const err = document.createElement('span'); err.className='badge'; err.dataset.role='err'; setText(err,'OK');
+
+    const tool = document.createElement('div'); tool.className='tool';
+    const btnEdit = document.createElement('button'); btnEdit.className='btn small'; btnEdit.dataset.role='edit'; btnEdit.title='Edit'; btnEdit.textContent='Edit';
+    tool.append(btnEdit);
+
+    rowCtrls.append(btnPlay,btnRe,btnStop,vol,err,tool);
+
+    const rowInfo = document.createElement('div'); rowInfo.className='row'; rowInfo.style.gap='14px';
+    const eq = document.createElement('div'); eq.className='eq'; eq.dataset.role='eq'; eq.setAttribute('aria-label','Live levels');
+    for(let i=0;i<24;i++){ const b=document.createElement('div'); b.className='bar'; eq.append(b); }
+    const ep = document.createElement('span'); ep.className='badge'; ep.dataset.role='endpoint'; ep.title='Current endpoint';
+    const up = document.createElement('span'); up.className='badge'; up.dataset.role='uptime'; up.title='Stream uptime';
+    const nx = document.createElement('span'); nx.className='badge'; nx.dataset.role='nx'; nx.title='Next reconnect';
+    setText(ep, `EP 1/${this.endpoints.length}`); setText(up,'00:00'); setText(nx,'—');
+
+    rowInfo.append(eq,ep,up,nx);
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); setText(summary,'Diagnostics / Log');
+    const log = document.createElement('div'); log.className='log'; log.dataset.role='log';
+    details.append(summary,log);
+
+    this.mount.replaceChildren(rowTop,rowCtrls,rowInfo,details);
+
     const $ = (sel)=>this.mount.querySelector(sel);
     this.$ = $;
-    this.$pill = $('[data-role="pill"]');
-    this.$play = $('[data-role="play"]');
-    this.$reconnect = $('[data-role="reconnect"]');
-    this.$stop = $('[data-role="stop"]');
-    this.$vol = $('[data-role="vol"]');
-    this.$err = $('[data-role="err"]');
-    this.$log = $('[data-role="log"]');
-    this.$fav = $('[data-role="fav"]');
-    this.$edit = $('[data-role="edit"]');
-    this.$eq = $('[data-role="eq"]');
-    this.$endpoint = $('[data-role="endpoint"]');
-    this.$uptime = $('[data-role="uptime"]');
-    this.$nx = $('[data-role="nx"]');
+    this.$pill = pill;
+    this.$play = btnPlay;
+    this.$reconnect = btnRe;
+    this.$stop = btnStop;
+    this.$vol = vol;
+    this.$err = err;
+    this.$log = log;
+    this.$fav = favBtn;
+    this.$edit = btnEdit;
+    this.$eq = eq;
+    this.$endpoint = ep;
+    this.$uptime = up;
+    this.$nx = nx;
 
     this.mount.addEventListener('focus', ()=>this.onFocus?.(this));
   }
@@ -393,43 +475,55 @@ class RadioPlayer {
   }
 
   setPill(text, mode=''){
-    this.$pill.textContent = text;
+    setText(this.$pill, text);
     this.$pill.classList.remove('ok','warn','bad');
     if (mode==='ok') this.$pill.classList.add('ok');
     if (mode==='warn') this.$pill.classList.add('warn');
     if (mode==='bad') this.$pill.classList.add('bad');
     if (miniBinding.player === this){
-      miniPill.textContent = text;
+      setText(miniPill, text);
       miniPill.className = 'pill ' + (mode||'');
     }
   }
 
   setErr(code, append=""){
     const msg = ERR_MSG[code] || 'Unknown';
-    this.$err.textContent = `${code}${append ? ' — '+append : ''}`;
+    setText(this.$err, `${code}${append ? ' — '+append : ''}`);
     this.log(`ERROR ${code}: ${msg}${append ? ' ('+append+')' : ''}`);
   }
 
   _updateEndpointBadge(){
-    this.$endpoint.textContent = `EP ${this.endpointIndex+1}/${this.endpoints.length}`;
+    setText(this.$endpoint, `EP ${this.endpointIndex+1}/${this.endpoints.length}`);
   }
 
   /* ---------- Audio ---------- */
   initAudio(){
+    // Guard mixed content early
+    const url = this._currentUrl();
+    if (location.protocol === 'https:' && /^http:\/\//i.test(url)){
+      this.setErr('E012', 'upgrade URL to https');
+      this.setPill('Blocked (mixed content)','bad');
+      return;
+    }
+
     this.audio = new Audio();
     this.audio.preload = 'none';
     this.audio.crossOrigin = 'anonymous';
     this.audio.setAttribute('playsinline','true');
-    const url = this._currentUrl();
-    if (location.protocol === 'https:' && url.startsWith('http://')){
-      this.setErr('E012');
-    }
-    this.audio.src = fresh(url);
-    if (this.station.mime) this.audio.type = this.station.mime;
+
+    // Use <source> child for MIME (audio.type is not used)
+    const srcEl = document.createElement('source');
+    srcEl.src = fresh(url);
+    if (this.station.mime) srcEl.type = this.station.mime;
+    // Clear previous children if any
+    while(this.audio.firstChild) this.audio.removeChild(this.audio.firstChild);
+    this.audio.appendChild(srcEl);
+
     this.audio.volume = parseFloat(this.$vol.value);
+
     this.attachAudioEvents();
     this._wireAudioGraph();
-    this.log(`Audio initialized => ${this.audio.src}`);
+    this.log(`Audio initialized => ${srcEl.src}`);
   }
 
   _wireAudioGraph(){
@@ -445,6 +539,15 @@ class RadioPlayer {
       this.analyser.connect(this.ctx.destination);
       this._startEQ();
     }catch(e){ this.log('WebAudio unavailable (EQ disabled).'); }
+  }
+
+  _disconnectGraph(){
+    try{
+      if (this.sourceNode){ this.sourceNode.disconnect(); this.sourceNode = null; }
+      if (this.gainNode){ this.gainNode.disconnect(); this.gainNode = null; }
+      if (this.analyser){ this.analyser.disconnect(); this.analyser = null; }
+    }catch{}
+    this._stopEQ();
   }
 
   _startEQ(){
@@ -464,7 +567,6 @@ class RadioPlayer {
     cancelAnimationFrame(this.eqRAF);
     this.eqRAF = requestAnimationFrame(draw);
   }
-
   _stopEQ(){ if (this.eqRAF) cancelAnimationFrame(this.eqRAF); this.eqRAF=null; }
 
   attachAudioEvents(){
@@ -493,10 +595,13 @@ class RadioPlayer {
       this.setPill('Paused','warn');
       this.$play.textContent = '▶ Play';
       this.isUserPaused = true;
+      this._clearReconnectTimeout();
       this._stopWatchdog();
       this._stopCountdown();
       this._stopUptime();
       this.log('Playback paused.');
+      // Attempt counter reset on user action
+      this.attempt = 0;
     });
 
     a.addEventListener('timeupdate', ()=>{
@@ -521,14 +626,15 @@ class RadioPlayer {
     a.addEventListener('error', ()=>{
       const err = a.error;
       if (!err){ this.setErr('E010','unknown media error'); this._scheduleReconnect(); return; }
+      const codeName = MediaErrCodes[err.code] || `CODE_${err.code}`;
       switch(err.code){
-        case MediaError.MEDIA_ERR_ABORTED: this.setErr('E002'); break;
-        case MediaError.MEDIA_ERR_NETWORK: this.setErr('E003'); break;
-        case MediaError.MEDIA_ERR_DECODE: this.setErr('E004'); break;
-        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED: this.setErr('E005'); break;
-        default: this.setErr('E010','code='+err.code); break;
+        case 1: this.setErr('E002'); break;
+        case 2: this.setErr('E003'); break;
+        case 3: this.setErr('E004'); break;
+        case 4: this.setErr('E005'); break;
+        default: this.setErr('E010', 'code='+codeName); break;
       }
-      if (err.code===MediaError.MEDIA_ERR_NETWORK || err.code===MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED){
+      if (err.code===2 || err.code===4){
         this.log('Hint: persistent issues may be CORS related. [E007]');
       }
       this._scheduleReconnect(true);
@@ -542,13 +648,13 @@ class RadioPlayer {
     const tick = ()=>{
       const msLeft = this._countdownUntil - Date.now();
       const s = Math.max(0, Math.ceil(msLeft/1000));
-      this.$nx.textContent = s ? `${labelPrefix} ${s}s` : 'Now';
+      setText(this.$nx, s ? `${labelPrefix} ${s}s` : 'Now');
       if (msLeft <= 0){ this.setPill(`${labelPrefix} 0s…`,'warn'); this._stopCountdown(); return; }
     };
     tick();
     this._countdownTimer = setInterval(tick, 250);
   }
-  _stopCountdown(){ if (this._countdownTimer) clearInterval(this._countdownTimer); this._countdownTimer = null; this.$nx.textContent = '—'; }
+  _stopCountdown(){ if (this._countdownTimer) clearInterval(this._countdownTimer); this._countdownTimer = null; setText(this.$nx,'—'); }
 
   _startUptime(){
     this._startedAt = Date.now();
@@ -558,12 +664,12 @@ class RadioPlayer {
       const ss = s.toString().padStart(2,'0');
       return h? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
     };
-    const tick=()=>{ const sec=(Date.now()-this._startedAt)/1000; this.$uptime.textContent = fmt(sec); };
+    const tick=()=>{ const sec=(Date.now()-this._startedAt)/1000; setText(this.$uptime, fmt(sec)); };
     tick();
     clearInterval(this._uptimeTimer);
     this._uptimeTimer = setInterval(tick, 1000);
   }
-  _stopUptime(){ clearInterval(this._uptimeTimer); this._uptimeTimer=null; this.$uptime.textContent='00:00'; }
+  _stopUptime(){ clearInterval(this._uptimeTimer); this._uptimeTimer=null; setText(this.$uptime,'00:00'); }
 
   /* ---------- Warmup/Watchdog ---------- */
   _setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
@@ -606,23 +712,62 @@ class RadioPlayer {
   /* ---------- Controls ---------- */
   async safePlay(){
     try{
+      await resumeCtxIfSuspended();
       await this._softRefreshAndPlay();
     }catch(e){
       this.setErr('E001', e?.name || 'NotAllowedError');
       this.setPill('User action needed','bad');
     }
   }
-  pause(){ if (this.audio){ this.audio.pause(); } }
-  stop(){ if (!this.audio) return; this.pause(); this.audio.src=""; this.audio.load(); this.setPill('Stopped'); this._stopCountdown(); this._stopUptime(); this.log('Stopped.'); unbindMini(this); }
+  pause(){
+    if (!this.audio) return;
+    this.audio.pause();
+    // timers cleared in 'pause' event + extra safety here
+    this._clearReconnectTimeout();
+  }
+  stop(){
+    if (!this.audio) return;
+    this.pause();
+    try{
+      this.audio.src = "";
+      this.audio.load();
+    }catch{}
+    this._stopCountdown();
+    this._stopUptime();
+    this._stopWatchdog();
+    this._clearReconnectTimeout();
+    this._disconnectGraph();
+    this.setPill('Stopped');
+    this.log('Stopped.');
+    unbindMini(this);
+    this.attempt = 0;
+  }
 
   async _softRefreshAndPlay(){
-    // Soft crossfade when reloading stream
-    const vol = this.audio ? this.audio.volume : parseFloat(this.$vol.value);
-    if (this.gainNode){ this.gainNode.gain.cancelScheduledValues(this.ctx.currentTime); this.gainNode.gain.linearRampToValueAtTime(0.0, this.ctx.currentTime + 0.12); }
-    if (this.audio){ try{ this.audio.src=""; this.audio.load(); }catch{} }
+    const prevVol = this.audio ? this.audio.volume : parseFloat(this.$vol.value);
+
+    // soft fade out
+    if (this.gainNode && this.ctx){
+      try{
+        this.gainNode.gain.cancelScheduledValues(this.ctx.currentTime);
+        this.gainNode.gain.linearRampToValueAtTime(0.0, this.ctx.currentTime + 0.12);
+      }catch{}
+    }
+
+    // Fully reset element + graph
+    if (this.audio){ try{ this.audio.pause(); this.audio.src=""; this.audio.load(); }catch{} }
+    this._disconnectGraph();
     this.initAudio();
-    this.audio.volume = vol;
-    if (this.gainNode){ this.gainNode.gain.setValueAtTime(0.0, this.ctx.currentTime); this.gainNode.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 0.20); }
+
+    // fade back in
+    if (this.gainNode && this.ctx){
+      try{
+        this.gainNode.gain.setValueAtTime(0.0, this.ctx.currentTime);
+        this.gainNode.gain.linearRampToValueAtTime(prevVol, this.ctx.currentTime + 0.20);
+      }catch{}
+    }
+    if (this.audio) this.audio.volume = prevVol;
+
     await this.audio.play();
     this.setPill('Playing','ok');
     this.$play.textContent = '⏸ Pause';
@@ -630,6 +775,13 @@ class RadioPlayer {
     this._startWatchdog();
     this._setWarmup(6000);
     this.log('Play (fresh stream, soft fade).');
+  }
+
+  _clearReconnectTimeout(){
+    if (this._reconnectTimeoutId){
+      clearTimeout(this._reconnectTimeoutId);
+      this._reconnectTimeoutId = null;
+    }
   }
 
   _scheduleReconnect(fromError=false){
@@ -674,6 +826,7 @@ class RadioPlayer {
 
     try{
       this._stopCountdown();
+      await resumeCtxIfSuspended();
       await this._softRefreshAndPlay();
       this.setPill('Playing','ok');
       this.attempt = 0;
@@ -686,7 +839,6 @@ class RadioPlayer {
         this.setErr('E001','user action required');
         this.setPill('Tap Play','bad');
       }else{
-        // Try rotating endpoint and schedule again
         if (this.endpoints.length>1){ this._rotateEndpoint(); } else { this.setErr('E011'); }
         this.setErr('E010', e?.message || 'play() failed');
         this._scheduleReconnect(true);
@@ -722,6 +874,16 @@ class RadioPlayer {
     // endpoint badge init
     this._updateEndpointBadge();
   }
+
+  /* ---------- Destruction ---------- */
+  destroy(){
+    // Stop playback & timers, disconnect graph, remove DOM listeners handled via GC
+    try{ this.stop(); }catch{}
+    this._stopEQ();
+    this._disconnectGraph();
+    // best-effort: remove any references
+    this.mount.replaceChildren();
+  }
 }
 
 /* ==============================
@@ -732,21 +894,32 @@ let focusedPlayer = null;
 
 function onPlayerFocused(p){ focusedPlayer = p; }
 
+// Clean up previous players to avoid leaks, then render fresh
 function render(){
+  // DESTROY old
+  if (players && players.length){
+    for (const p of players){
+      try{ p.destroy(); }catch{}
+    }
+  }
+
   const q = (search.value||'').toLowerCase();
   const sts = allStations().filter(s=>{
     const hit = s.name.toLowerCase().includes(q) || (s.logo||'').toLowerCase().includes(q);
     const favHit = !showingFavoritesOnly || favorites.has(s.id);
     return hit && favHit;
   });
+
   grid.innerHTML = '';
   players = sts.map(st=>{
     const host = document.createElement('div'); grid.appendChild(host);
     return new RadioPlayer(st, host, onPlayerFocused);
   });
+
   if (players.length===0){
     const empty = document.createElement('div');
-    empty.className='card'; empty.innerHTML = `<div class="title">No stations found</div><div class="hint">Try clearing the search or add a new station.</div>`;
+    empty.className='card';
+    empty.innerHTML = `<div class="title">No stations found</div><div class="hint">Try clearing the search or add a new station.</div>`;
     grid.appendChild(empty);
   }
 }
@@ -756,14 +929,6 @@ function muteAll(){ players.forEach(p=>{ if (p.audio) p.audio.muted = true; }); 
 function loadVolume(){ return parseFloat(localStorage.getItem(LS.VOLUME) || '0.7'); }
 function saveVolume(v){ localStorage.setItem(LS.VOLUME, String(v)); }
 function persistLast(id){ localStorage.setItem(LS.LAST, JSON.stringify({id})); }
-function resumeLastIfAny(){
-  try{
-    const last = JSON.parse(localStorage.getItem(LS.LAST)||'null');
-    if (!last) return;
-    const p = players.find(x=>x.station.id===last.id);
-    if (p){ setTimeout(()=>p.safePlay(), 400); }
-  }catch{}
-}
 
 /* ==============================
    Mini Player Binding
@@ -772,8 +937,8 @@ const miniBinding = { player: null };
 function bindMini(player){
   mini.hidden = false;
   miniBinding.player = player;
-  miniName.textContent = player.station.name;
-  miniPill.textContent = 'Playing'; miniPill.className='pill ok';
+  setText(miniName, player.station.name);
+  setText(miniPill, 'Playing'); miniPill.className='pill ok';
   miniVol.value = player.$vol.value;
 }
 function unbindMini(player){
@@ -829,14 +994,17 @@ saveStationBtn.addEventListener('click', (ev)=>{
   const name = stName.value.trim();
   const src = stUrl.value.trim();
   if (!name || !src){ toast('Please fill in name and URL'); return; }
+
+  // minimal URL sanity
+  try { new URL(src); } catch { toast('Invalid URL'); return; }
+
   const logo = stLogo.value.trim();
   const mime = stMime.value || undefined;
-  const fallbacks = stFallbacks.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const fallbacks = stFallbacks.value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6).filter(u=>{ try{ new URL(u); return true; }catch{ return false; }});
   const watchdog = Math.max(6, Math.min(120, Number(stWatchdog.value)||20));
   const maxExp = Math.max(2, Math.min(6, Number(stMaxExp.value)||4));
 
   if (editingStationId){
-    // update userStations entry or add if not exists
     const idx = userStations.findIndex(s=>s.id===editingStationId);
     const rec = { id: editingStationId, name, src, logo, mime, fallbacks, watchdog, maxExp };
     if (idx>=0) userStations[idx]=rec; else userStations.push(rec);
@@ -869,14 +1037,19 @@ exportBtn.addEventListener('click', ()=>{
 importBtn.addEventListener('click', ()=> importFile.click());
 importFile.addEventListener('change', ()=>{
   const f = importFile.files?.[0]; if (!f) return;
+  if (f.size > 512 * 1024){ toast('Import too large (max 512KB)'); return; }
   const fr = new FileReader();
   fr.onload = ()=> {
     try {
       const arr = JSON.parse(fr.result);
       if (!Array.isArray(arr)) throw new Error('Invalid JSON');
-      userStations = arr;
+      const cleaned = arr.filter(validateStation).slice(0, 300);
+      // de-dupe by id (user overrides)
+      const map = new Map(userStations.map(s=>[s.id,s]));
+      for (const s of cleaned) map.set(s.id, s);
+      userStations = [...map.values()];
       saveUserStations(userStations);
-      toast(`Imported ${arr.length} stations`);
+      toast(`Imported ${cleaned.length} stations`);
       render();
     } catch(e){ toast('Import failed: ' + e.message); }
   };
@@ -888,7 +1061,9 @@ importFile.addEventListener('change', ()=>{
 ============================== */
 const favoritesOnly = ()=>{
   showingFavoritesOnly = !showingFavoritesOnly;
+  // ensure both classes are applied for styling
   favOnlyBtn.classList.toggle('warn', showingFavoritesOnly);
+  favOnlyBtn.classList.add('btn');
   favOnlyBtn.textContent = showingFavoritesOnly? '★ Favorites (On)' : '★ Favorites';
   render();
 };
@@ -913,7 +1088,7 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
-/* Resume last played (optional) */
+/* Resume last played after first render */
 function tryResumeLastOnLoad(){
   const lastRaw = localStorage.getItem(LS.LAST);
   if (!lastRaw) return;
@@ -948,6 +1123,90 @@ if ('mediaSession' in navigator){
     navigator.mediaSession.setActionHandler('seekto', null);
   }catch{}
 }
+
+/* ===== Changelog / Patch Notes ===== */
+const APP_VERSION = '2.1.0';  // <- bump when you ship updates
+LS.LAST_SEEN_VER = 'fm.lastSeenVersion';
+LS.SHOW_CHANGELOG = 'fm.showChangelog';
+
+const defaultShow = true; // first run: show when version changes
+if (localStorage.getItem(LS.SHOW_CHANGELOG) === null) {
+  localStorage.setItem(LS.SHOW_CHANGELOG, String(defaultShow));
+}
+
+// Your patch notes data (newest first)
+const PATCH_NOTES = [
+  {
+    version: '2.1.0',
+    date: '2025-09-13',
+    highlights: [
+      'Fixed memory leaks on re-render (timers/RAF/WebAudio cleanup).',
+      'AudioContext auto-resume on Play for iOS/autoplay-restricted browsers.',
+      'Mixed-content guard: block http:// streams on https:// pages with E012.',
+      'Reconnect timeouts cleared on pause/stop; no surprise auto-resumes.',
+      'Safer import: schema validation, size cap, and de-dupe.',
+      'XSS hardening: user text inserted via textContent in station cards.',
+      'MIME now set via <source type> (was ignored on <audio>).',
+      'Accessibility: toasts are aria-live; buttons have labels.'
+    ],
+    fixes: [
+      'Stopped EQ animation when paused/stopped to reduce CPU.',
+      'Reset reconnect attempt counter after manual actions.',
+      'Optional cache-busting disabled by default (reduces CDN 4xx).'
+    ]
+  },
+  // Keep older entries below
+  
+];
+
+// Elements
+const showChangelogBtn = document.getElementById('showChangelog');
+const changelogDialog = document.getElementById('changelogDialog');
+const changelogBody = document.getElementById('changelogBody');
+const showOnStartup = document.getElementById('showOnStartup');
+
+function renderPatchNotes() {
+  // build HTML safely
+  const parts = PATCH_NOTES.map(entry => {
+    const hl = entry.highlights.map(i => `• ${i}`).join('\n');
+    const fx = (entry.fixes && entry.fixes.length) ? '\n\nFixes:\n' + entry.fixes.map(i => `• ${i}`).join('\n') : '';
+    return `v${entry.version} — ${entry.date}\n${'―'.repeat(24)}\n${hl}${fx}`;
+  });
+  changelogBody.textContent = parts.join('\n\n');
+}
+
+function openChangelog(manual = false) {
+  renderPatchNotes();
+  // checkbox reflects preference
+  showOnStartup.checked = localStorage.getItem(LS.SHOW_CHANGELOG) === 'true';
+  changelogDialog.showModal();
+  // mark current version as seen if opened manually or on auto-show
+  localStorage.setItem(LS.LAST_SEEN_VER, APP_VERSION);
+}
+
+function maybeAutoShowChangelog() {
+  const lastSeen = localStorage.getItem(LS.LAST_SEEN_VER) || '';
+  const wantsAuto = localStorage.getItem(LS.SHOW_CHANGELOG) === 'true';
+  if (wantsAuto && lastSeen !== APP_VERSION) {
+    // Open slightly after first render so layout is ready
+    setTimeout(() => openChangelog(false), 300);
+  }
+}
+
+// Events
+if (showChangelogBtn) {
+  showChangelogBtn.addEventListener('click', () => openChangelog(true));
+}
+
+if (showOnStartup) {
+  showOnStartup.addEventListener('change', () => {
+    localStorage.setItem(LS.SHOW_CHANGELOG, String(showOnStartup.checked));
+  });
+}
+
+// Call after your app initializes (e.g., after render(); tryResumeLastOnLoad();)
+maybeAutoShowChangelog();
+
 </script>
 </body>
 </html>
