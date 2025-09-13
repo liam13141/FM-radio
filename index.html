@@ -3,9 +3,89 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FM Radio Player (v2) — Moonlit Websites</title>
+<title>FM Radio Player — Ultra Resilient (v2)</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 <style>
+  /* ===== Device-aware UI presets ===== */
+:root{
+  --hit:40px;         /* min touch target */
+  --radius:14px;
+  --grid-min:320px;   /* grid min card width */
+  --text-scale:1;     /* base text scale */
+  --density:1;        /* control paddings/margins */
+}
+
+[data-device="mobile"]{
+  --hit:48px;
+  --radius:16px;
+  --grid-min:260px;
+  --text-scale:1.06;
+  --density:1.15;
+}
+
+[data-device="tablet"]{
+  --hit:46px;
+  --radius:16px;
+  --grid-min:300px;
+  --text-scale:1.04;
+  --density:1.08;
+}
+
+[data-device="desktop"]{
+  --hit:40px;
+  --radius:14px;
+  --grid-min:340px;
+  --text-scale:1.0;
+  --density:1.0;
+}
+
+[data-device="tv"]{
+  --hit:60px;
+  --radius:18px;
+  --grid-min:420px;
+  --text-scale:1.15;
+  --density:1.2;
+}
+
+[data-device="quest"]{
+  --hit:54px;
+  --radius:18px;
+  --grid-min:280px;
+  --text-scale:1.08;
+  --density:1.15;
+}
+
+/* Apply variables to existing UI */
+body{
+  font-size: calc(16px * var(--text-scale));
+  gap: calc(20px * var(--density));
+  padding: calc(22px * var(--density));
+}
+.card{ border-radius: var(--radius); padding: calc(16px * var(--density)); }
+.btn{ min-height: var(--hit); border-radius: var(--radius); padding: calc(10px * var(--density)) calc(12px * var(--density)); }
+.btn.small{ padding: calc(6px * var(--density)) calc(8px * var(--density)); min-height: calc(var(--hit) - 8px); border-radius: calc(var(--radius) - 4px); }
+input[type="search"],input[type="text"],input[type="url"],select{
+  min-height: calc(var(--hit) - 8px);
+  border-radius: calc(var(--radius) - 2px);
+  padding: calc(10px * var(--density)) calc(14px * var(--density));
+}
+.grid{ grid-template-columns: repeat(auto-fit,minmax(var(--grid-min),1fr)); gap: calc(16px * var(--density)); }
+
+/* Mobile simplifications */
+[data-device="mobile"] .eq{ display:none; } /* hide the live EQ to save space/CPU */
+[data-device="mobile"] .hint{ display:none; }
+[data-device="mobile"] .toolbar{ gap: 8px; }
+[data-device="mobile"] .btn.ghost{ display:none; }        /* hide less-used controls */
+[data-device="mobile"] #exportBtn,
+[data-device="mobile"] #importBtn{ display:none; }        /* can still be reached on desktop */
+[data-device="mobile"] .tag{ display:none; }              /* reduce chrome */
+
+/* Quest / TV: bigger targets, fewer controls */
+[data-device="quest"] .eq{ display:none; }
+[data-device="quest"] .hint{ display:none; }
+[data-device="quest"] #favoritesOnly{ display:none; }
+[data-device="tv"] input, [data-device="tv"] .btn.small{ font-size: 1.05em; }
+
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
     --bg:#0e0f12;--panel:#17191e;--panel-2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
@@ -91,6 +171,7 @@
 
       <div class="toolbar">
         <input id="search" type="search" placeholder="Search stations… (/ to focus)" title="Press / to focus search" />
+        
         <button class="btn small" id="showChangelog" title="Show patch notes">What's New</button>
         <button class="btn small" id="toggleTheme" title="Toggle theme">Toggle Theme</button>
         <button class="btn small" id="stopAll" title="Stop all stations (S)">Stop All</button>
@@ -211,6 +292,82 @@ const DEFAULT_STATIONS = [
   { id: "k95", name: "K95 95.3 FM", logo: "95.3",
     src: "https://stream.rcs.revma.com/uqgf3huv57uvv", mime: "audio/mpeg", fallbacks: [], watchdog: 20, maxExp: 4 },
 ];
+
+/* ==============================
+   Device Profiler + UI Presets
+============================== */
+const UI = {
+  key: 'fm.uiProfile', // 'auto' | 'mobile' | 'tablet' | 'desktop' | 'tv' | 'quest'
+};
+
+function detectDevice(){
+  const ua = navigator.userAgent || '';
+  const uaData = navigator.userAgentData?.platform || '';
+  const touch = navigator.maxTouchPoints || 0;
+  const minSide = Math.min(window.innerWidth, window.innerHeight);
+
+  // Explicit device hints
+  if (/OculusBrowser|Quest|Meta Quest/i.test(ua)) return 'quest';
+  if (/SmartTV|Tizen|Web0S|AppleTV|BRAVIA/i.test(ua)) return 'tv';
+
+  // iPadOS can report as Mac; check touch + screen size
+  const isApple = /iPhone|iPad|iPod|Macintosh/i.test(ua) || /macOS|iOS/.test(uaData);
+
+  // Basic buckets by touch + viewport
+  if (touch > 0){
+    if (minSide < 700) return 'mobile';
+    if (minSide < 1100) return 'tablet';
+    return isApple ? 'tablet' : 'desktop';
+  }
+
+  // No touch: assume desktop unless it's clearly TV
+  return 'desktop';
+}
+
+function applyProfile(profile){
+  const p = profile || 'auto';
+  const resolved = (p === 'auto') ? detectDevice() : p;
+  document.documentElement.setAttribute('data-device', resolved);
+  localStorage.setItem(UI.key, p); // persist user's choice (not the resolved)
+  // Optional: announce
+  try { toast(`UI profile: ${resolved}${p!=='auto'?' (manual)':' (auto)'}`); } catch {}
+}
+
+// Build a small selector in the toolbar (Auto/Mobile/Tablet/…)
+(function addProfileSelector(){
+  const bar = document.querySelector('.toolbar');
+  if (!bar) return;
+  const sel = document.createElement('select');
+  sel.id = 'uiProfile';
+  sel.title = 'UI profile';
+  sel.innerHTML = `
+    <option value="auto">UI: Auto</option>
+    <option value="mobile">UI: Mobile</option>
+    <option value="tablet">UI: Tablet</option>
+    <option value="desktop">UI: Desktop</option>
+    <option value="tv">UI: TV</option>
+    <option value="quest">UI: Quest</option>
+  `;
+  // insert near the start of the toolbar
+  bar.insertBefore(sel, bar.firstChild);
+
+  const saved = localStorage.getItem(UI.key) || 'auto';
+  sel.value = saved;
+  applyProfile(saved);
+
+  sel.addEventListener('change', ()=> applyProfile(sel.value));
+
+  // If Auto, re-evaluate on resize/orientation changes (debounced)
+  let t = null;
+  const onResize = () => {
+    if ((localStorage.getItem(UI.key) || 'auto') !== 'auto') return;
+    clearTimeout(t);
+    t = setTimeout(()=> applyProfile('auto'), 150);
+  };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+})();
+
 
 /* ==============================
    Utilities
