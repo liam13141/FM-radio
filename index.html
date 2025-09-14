@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FM Radio Player — Ultra Resilient (v2)</title>
+<title>FM Radio Player — MoonLitGames</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 <style>
   /* ===== Device-aware UI presets ===== */
@@ -171,7 +171,7 @@ input[type="search"],input[type="text"],input[type="url"],select{
 
       <div class="toolbar">
         <input id="search" type="search" placeholder="Search stations… (/ to focus)" title="Press / to focus search" />
-        
+        <button class="btn small" id="sleepTimerBtn" title="Set sleep timer"> Sleep</button>
         <button class="btn small" id="showChangelog" title="Show patch notes">What's New</button>
         <button class="btn small" id="toggleTheme" title="Toggle theme">Toggle Theme</button>
         <button class="btn small" id="stopAll" title="Stop all stations (S)">Stop All</button>
@@ -258,6 +258,34 @@ input[type="search"],input[type="text"],input[type="url"],select{
   </form>
 </dialog>
 
+<!-- Sleep Timer Dialog (v2.2.0) -->
+<dialog id="sleepDialog">
+  <form method="dialog" id="sleepForm">
+    <h3>Sleep Timer</h3>
+    <div class="dialog-row">
+      <label style="flex:1">
+        Minutes until stop
+        <input id="sleepMinutes" type="number" min="1" max="180" value="20" style="width:100%">
+      </label>
+    </div>
+    <div class="dialog-row">
+      <label style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="sleepFade" checked>
+        Fade out in the last 10 seconds
+      </label>
+    </div>
+    <div class="dialog-row" style="justify-content:space-between">
+      <button class="btn" value="cancel">Cancel</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn danger" id="cancelSleep" type="button">Cancel Timer</button>
+        <button class="btn main" id="startSleep" value="default">Start</button>
+      </div>
+    </div>
+    <div class="field-help" id="sleepStatus" style="margin-top:8px"></div>
+  </form>
+</dialog>
+
+
 
   <input type="file" id="importFile" accept="application/json" hidden />
 
@@ -282,6 +310,11 @@ const LS = {
   LAST: 'fm.last'                // {id}
 };
 
+// v2.2.0 additions
+LS.SHOW_FAV_ONLY = 'fm.favoritesOnly';
+LS.SLEEP_MINUTES = 'fm.sleep.minutes';
+
+
 // Default stations (unchanged)
 const DEFAULT_STATIONS = [
   { id: "wrxlhd2", name: "Big 98.5 FM", logo: "98.5",
@@ -293,85 +326,50 @@ const DEFAULT_STATIONS = [
     src: "https://stream.rcs.revma.com/uqgf3huv57uvv", mime: "audio/mpeg", fallbacks: [], watchdog: 20, maxExp: 4 },
 ];
 
-/* ==============================
-   Device Profiler + UI Presets
-============================== */
-const UI = {
-  key: 'fm.uiProfile', // 'auto' | 'mobile' | 'tablet' | 'desktop' | 'tv' | 'quest'
-};
-
-function detectDevice(){
-  const ua = navigator.userAgent || '';
-  const uaData = navigator.userAgentData?.platform || '';
-  const touch = navigator.maxTouchPoints || 0;
-  const minSide = Math.min(window.innerWidth, window.innerHeight);
-
-  // Explicit device hints
-  if (/OculusBrowser|Quest|Meta Quest/i.test(ua)) return 'quest';
-  if (/SmartTV|Tizen|Web0S|AppleTV|BRAVIA/i.test(ua)) return 'tv';
-
-  // iPadOS can report as Mac; check touch + screen size
-  const isApple = /iPhone|iPad|iPod|Macintosh/i.test(ua) || /macOS|iOS/.test(uaData);
-
-  // Basic buckets by touch + viewport
-  if (touch > 0){
-    if (minSide < 700) return 'mobile';
-    if (minSide < 1100) return 'tablet';
-    return isApple ? 'tablet' : 'desktop';
-  }
-
-  // No touch: assume desktop unless it's clearly TV
-  return 'desktop';
-}
-
-function applyProfile(profile){
-  const p = profile || 'auto';
-  const resolved = (p === 'auto') ? detectDevice() : p;
-  document.documentElement.setAttribute('data-device', resolved);
-  localStorage.setItem(UI.key, p); // persist user's choice (not the resolved)
-  // Optional: announce
-  try { toast(`UI profile: ${resolved}${p!=='auto'?' (manual)':' (auto)'}`); } catch {}
-}
-
-// Build a small selector in the toolbar (Auto/Mobile/Tablet/…)
-(function addProfileSelector(){
-  const bar = document.querySelector('.toolbar');
-  if (!bar) return;
-  const sel = document.createElement('select');
-  sel.id = 'uiProfile';
-  sel.title = 'UI profile';
-  sel.innerHTML = `
-    <option value="auto">UI: Auto</option>
-    <option value="mobile">UI: Mobile</option>
-    <option value="tablet">UI: Tablet</option>
-    <option value="desktop">UI: Desktop</option>
-    <option value="tv">UI: TV</option>
-    <option value="quest">UI: Quest</option>
-  `;
-  // insert near the start of the toolbar
-  bar.insertBefore(sel, bar.firstChild);
-
-  const saved = localStorage.getItem(UI.key) || 'auto';
-  sel.value = saved;
-  applyProfile(saved);
-
-  sel.addEventListener('change', ()=> applyProfile(sel.value));
-
-  // If Auto, re-evaluate on resize/orientation changes (debounced)
-  let t = null;
-  const onResize = () => {
-    if ((localStorage.getItem(UI.key) || 'auto') !== 'auto') return;
-    clearTimeout(t);
-    t = setTimeout(()=> applyProfile('auto'), 150);
-  };
-  window.addEventListener('resize', onResize);
-  window.addEventListener('orientationchange', onResize);
-})();
 
 
 /* ==============================
    Utilities
+
+   /* ==============================
+   v2.2.0 — Auto Device Detection
 ============================== */
+function detectDevice() {
+  const ua = (navigator.userAgent || '').toLowerCase();
+  const w = Math.min(window.innerWidth || 0, screen.width || Infinity);
+  const h = Math.min(window.innerHeight || 0, screen.height || Infinity);
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Allow manual override via ?device=mobile|tablet|desktop|tv|quest
+  const params = new URLSearchParams(location.search);
+  const forced = params.get('device');
+  if (forced) return forced;
+
+  // Heuristics
+  const isQuest = /quest|oculus/.test(ua);
+  if (isQuest) return 'quest';
+
+  const isTV = /smart-tv|hbbtv|appletv|tizen|webos|viera|bravia/.test(ua);
+  if (isTV) return 'tv';
+
+  const shortSide = Math.min(w, h);
+  if (shortSide <= 480 || (isTouch && shortSide <= 540)) return 'mobile';
+  if (shortSide <= 900) return 'tablet';
+  return 'desktop';
+}
+
+function applyDeviceDataAttr() {
+  const d = detectDevice();
+  document.documentElement.setAttribute('data-device', d);
+}
+window.addEventListener('resize', () => {
+  // Update only if the bucket changes (avoids thrash)
+  const before = document.documentElement.getAttribute('data-device');
+  const next = detectDevice();
+  if (before !== next) applyDeviceDataAttr();
+});
+
+
 const MediaErrCodes = { 1:'ABORTED', 2:'NETWORK', 3:'DECODE', 4:'SRC_NOT_SUPPORTED' };
 
 function loadTheme(){
@@ -385,6 +383,16 @@ function toggleTheme(){
   localStorage.setItem(LS.THEME, next);
   toast(`Theme: ${next}`);
 }
+
+/* v2.2.0 — Deep-link autostart: ?play=<stationId> */
+function tryDeepLinkAutoplay() {
+  const id = new URLSearchParams(location.search).get('play');
+  if (!id) return false;
+  const p = players.find(x => x.station.id === id);
+  if (p) { p.safePlay(); return true; }
+  return false;
+}
+
 
 // Safer JSON helpers
 function loadFavorites(){
@@ -458,6 +466,7 @@ const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 const importFile = document.getElementById('importFile');
 
+
 const mini = document.getElementById('mini');
 const miniName = document.getElementById('miniName');
 const miniPill = document.getElementById('miniPill');
@@ -466,9 +475,12 @@ const miniStop = document.getElementById('miniStop');
 const miniVol = document.getElementById('miniVol');
 
 const toastWrap = document.getElementById('toast');
+
 // a11y: announce to screen readers
 toastWrap.setAttribute('aria-live','polite');
 toastWrap.setAttribute('role','status');
+
+
 
 function toast(msg, ms=2200){
   const el = document.createElement('div'); el.className='msg'; el.textContent = msg;
@@ -481,7 +493,7 @@ function toast(msg, ms=2200){
 ============================== */
 let favorites = loadFavorites();
 let userStations = loadUserStations();
-let showingFavoritesOnly = false;
+let showingFavoritesOnly = localStorage.getItem(LS.SHOW_FAV_ONLY) === 'true';
 
 function allStations(){
   // Merge default + user stations, dedupe by id (user overrides)
@@ -551,6 +563,11 @@ class RadioPlayer {
     this._uptimeTimer = null;
 
     this.render();
+    // After render();
+if (!tryDeepLinkAutoplay()) {
+  tryResumeLastOnLoad();
+}
+
     this.initAudio();
     this.bind();
   }
@@ -561,6 +578,97 @@ class RadioPlayer {
     this.mount.tabIndex = 0;
 
     // Build DOM safely (no user HTML injection)
+    /* ==============================
+   v2.2.0 — Sleep Timer
+============================== */
+const sleepDialog = document.getElementById('sleepDialog');
+const sleepForm = document.getElementById('sleepForm');
+const sleepMinutes = document.getElementById('sleepMinutes');
+const sleepFade = document.getElementById('sleepFade');
+const sleepStatus = document.getElementById('sleepStatus');
+const sleepTimerBtn = document.getElementById('sleepTimerBtn');
+const startSleepBtn = document.getElementById('startSleep');
+const cancelSleepBtn = document.getElementById('cancelSleep');
+
+let sleepTimerId = null;
+let sleepFadeId = null;
+let sleepEndsAt = 0;
+function updateSleepStatus() {
+  if (!sleepEndsAt) { sleepStatus.textContent = 'No timer set.'; return; }
+  const s = Math.max(0, Math.ceil((sleepEndsAt - Date.now()) / 1000));
+  const m = Math.floor(s / 60);
+  const r = String(s % 60).padStart(2,'0');
+  sleepStatus.textContent = `Timer active — ${m}:${r} remaining.`;
+}
+function clearSleepTimer() {
+  if (sleepTimerId) clearTimeout(sleepTimerId);
+  if (sleepFadeId) clearInterval(sleepFadeId);
+  sleepTimerId = null; sleepFadeId = null; sleepEndsAt = 0;
+  updateSleepStatus();
+  toast('Sleep timer canceled');
+}
+
+function startSleepTimer(mins, doFade) {
+  clearSleepTimer();
+  const ms = Math.max(1, mins) * 60 * 1000;
+  sleepEndsAt = Date.now() + ms;
+  updateSleepStatus();
+
+  
+
+  // optional fade in last 10s
+  if (doFade) {
+    const fadeStart = ms - 10_000;
+    if (fadeStart > 0) {
+      setTimeout(() => {
+        sleepFadeId = setInterval(() => {
+          players.forEach(p => {
+            if (!p.audio) return;
+            const v = Math.max(0, p.audio.volume - 0.05);
+            p.audio.volume = v;
+            if (miniBinding.player === p) miniVol.value = String(v);
+            p.$vol.value = String(v);
+          });
+        }, 500);
+      }, fadeStart);
+    }
+  }
+
+  sleepTimerId = setTimeout(() => {
+    players.forEach(p => p.stop());
+    clearSleepTimer();
+    toast('Good night. All stations stopped.');
+  }, ms);
+
+  toast(`Sleep timer set for ${mins} min${mins>1?'s':''}.`);
+}
+
+// Wire UI
+if (sleepTimerBtn) {
+  sleepTimerBtn.addEventListener('click', () => {
+    const saved = Number(localStorage.getItem(LS.SLEEP_MINUTES) || '20') || 20;
+    sleepMinutes.value = saved;
+    updateSleepStatus();
+    sleepDialog.showModal();
+  });
+}
+if (startSleepBtn) {
+  startSleepBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const mins = Math.max(1, Math.min(180, Number(sleepMinutes.value)||20));
+    localStorage.setItem(LS.SLEEP_MINUTES, String(mins));
+    startSleepTimer(mins, sleepFade.checked);
+    sleepDialog.close();
+  });
+}
+if (cancelSleepBtn) {
+  cancelSleepBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearSleepTimer();
+    sleepDialog.close();
+  });
+}
+
     const rowTop = document.createElement('div'); rowTop.className = 'row';
     const logo = document.createElement('div'); logo.className = 'logo'; logo.dataset.role='logo';
     setText(logo, this.station.logo || 'FM');
@@ -1216,14 +1324,15 @@ importFile.addEventListener('change', ()=>{
 /* ==============================
    Global Controls & UX
 ============================== */
-const favoritesOnly = ()=>{
+const favoritesOnly = ()=> {
   showingFavoritesOnly = !showingFavoritesOnly;
-  // ensure both classes are applied for styling
+  localStorage.setItem(LS.SHOW_FAV_ONLY, String(showingFavoritesOnly)); // v2.2.0 persist
   favOnlyBtn.classList.toggle('warn', showingFavoritesOnly);
   favOnlyBtn.classList.add('btn');
-  favOnlyBtn.textContent = showingFavoritesOnly? '★ Favorites (On)' : '★ Favorites';
+  favOnlyBtn.textContent = showingFavoritesOnly ? '★ Favorites (On)' : '★ Favorites';
   render();
 };
+
 
 toggleThemeBtn.addEventListener('click', toggleTheme);
 stopAllBtn.addEventListener('click', stopAll);
@@ -1266,9 +1375,28 @@ window.addEventListener('offline', ()=>{ players.forEach(p=>p.log('Network: offl
 miniVol.value = loadVolume();
 
 /* Initialization */
+/* Initialization */
+applyDeviceDataAttr?.(); // if you added device detection; otherwise ignore
+
+applyDeviceDataAttr();     // NEW (v2.2.0)
 loadTheme();
 render();
-tryResumeLastOnLoad();
+
+
+// Restore ★ favorites filter state **before** first render
+showingFavoritesOnly = localStorage.getItem(LS.SHOW_FAV_ONLY) === 'true';
+if (showingFavoritesOnly) {
+  favOnlyBtn.classList.add('warn','btn');
+  favOnlyBtn.textContent = '★ Favorites (On)';
+}
+
+render();
+
+// Deep-link (if you added it); else keep your original resume
+if (!tryDeepLinkAutoplay?.()) {
+  tryResumeLastOnLoad();
+}
+
 
 /* ==============================
    Utility: Media Session (global)
@@ -1282,7 +1410,8 @@ if ('mediaSession' in navigator){
 }
 
 /* ===== Changelog / Patch Notes ===== */
-const APP_VERSION = '2.1.0';  // <- bump when you ship updates
+// v2.2.0 minor update
+const APP_VERSION = '2.2.2';  // <- bump when you ship updates
 LS.LAST_SEEN_VER = 'fm.lastSeenVersion';
 LS.SHOW_CHANGELOG = 'fm.showChangelog';
 
@@ -1294,24 +1423,21 @@ if (localStorage.getItem(LS.SHOW_CHANGELOG) === null) {
 // Your patch notes data (newest first)
 const PATCH_NOTES = [
   {
-    version: '2.1.0',
-    date: '2025-09-13',
-    highlights: [
-      'Fixed memory leaks on re-render (timers/RAF/WebAudio cleanup).',
-      'AudioContext auto-resume on Play for iOS/autoplay-restricted browsers.',
-      'Mixed-content guard: block http:// streams on https:// pages with E012.',
-      'Reconnect timeouts cleared on pause/stop; no surprise auto-resumes.',
-      'Safer import: schema validation, size cap, and de-dupe.',
-      'XSS hardening: user text inserted via textContent in station cards.',
-      'MIME now set via <source type> (was ignored on <audio>).',
-      'Accessibility: toasts are aria-live; buttons have labels.'
-    ],
-    fixes: [
-      'Stopped EQ animation when paused/stopped to reduce CPU.',
-      'Reset reconnect attempt counter after manual actions.',
-      'Optional cache-busting disabled by default (reduces CDN 4xx).'
-    ]
-  },
+  version: '2.2.2',
+  date: '2025-09-13',
+  highlights: [
+    'Auto device detection: sets [data-device] to mobile/tablet/desktop/tv/quest based on screen + UA.',
+    'Sleep Timer: stop all stations after N minutes with optional 10s fade.',
+    'Deep-link autostart: use ?play=<stationId> to auto-play on load.',
+    'Favorites filter persists across sessions.'
+  ],
+  fixes: [
+    'Improved initial resume timing with one-shot warmup guard.',
+    'Safer URL param parsing and defensive checks around last-play resume.'
+  ]
+},
+
+
   // Keep older entries below
   
 ];
