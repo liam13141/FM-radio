@@ -285,6 +285,15 @@ input[type="search"],input[type="text"],input[type="url"],select{
   </form>
 </dialog>
 
+<div id="loginBox" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:9999;">
+  <form id="loginForm" style="background:var(--panel);padding:32px;border-radius:var(--radius);display:flex;flex-direction:column;gap:12px;min-width:280px;">
+    <h3>Login to FM Radio</h3>
+    <input id="username" placeholder="Username" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <button class="btn main" type="submit">Login</button>
+    <small style="color:var(--muted);font-size:.9rem;">(Stores cookie on localhost)</small>
+  </form>
+</div>
 
 
   <input type="file" id="importFile" accept="application/json" hidden />
@@ -1528,6 +1537,98 @@ if (showOnStartup) {
 
 // Call after your app initializes (e.g., after render(); tryResumeLastOnLoad();)
 maybeAutoShowChangelog();
+
+/* =============================
+   Localhost Cookie Login System
+   ============================= */
+
+const loginBox = document.getElementById("loginBox");
+const loginForm = document.getElementById("loginForm");
+
+// --- Helper functions ---
+function setCookie(name, value, days = 7) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 864e5);
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+}
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+function eraseCookie(name) {
+  document.cookie = `${name}=; Max-Age=-99999999; path=/`;
+}
+
+// --- Fake "auth" check ---
+function checkLogin() {
+  const user = getCookie("fmUser");
+  if (user) {
+    console.log("Logged in as:", user);
+    loginBox.style.display = "none";
+    toast(`Welcome back, ${user}!`);
+  } else {
+    loginBox.style.display = "flex";
+  }
+}
+
+// --- Handle form ---
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const u = username.value.trim();
+    const p = password.value.trim();
+
+    if (!u || !p) return toast("Fill in username and password");
+
+    // For local dev, any username/password works.
+    setCookie("fmUser", u, 7);
+    loginBox.style.display = "none";
+    toast(`Logged in as ${u}`);
+  });
+}
+
+// --- Allow logout via console or button ---
+window.logout = function () {
+  eraseCookie("fmUser");
+  toast("Logged out");
+  location.reload();
+};
+
+// --- Auto-check on load ---
+checkLogin();
+
+/* =============================
+   Route Handler for /terms
+   Redirects or embeds TermsFeed page
+============================= */
+if (window.location.pathname === "/terms") {
+  document.title = "Terms and Conditions — FM Radio Player";
+
+  // Option 1: Embed the TermsFeed live page directly
+  document.body.innerHTML = `
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0a0c10;
+        color: #e9eef3;
+        font-family: "Poppins", system-ui, sans-serif;
+      }
+      iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <iframe src="https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f" title="Terms and Conditions"></iframe>
+  `;
+
+  // Option 2 (if you prefer redirect instead of embed)
+  // window.location.href = "https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f";
+}
+
+
+
 
 </script>
 </body>
