@@ -772,9 +772,10 @@ if (cancelSleepBtn) {
     }
 
     this.audio = new Audio();
-    this.audio.preload = 'none';
-    this.audio.crossOrigin = 'anonymous';
-    this.audio.setAttribute('playsinline','true');
+this.audio.preload = 'auto'; // ✅ preload to buffer enough for playback
+this.audio.crossOrigin = 'anonymous';
+this.audio.setAttribute('playsinline','true');
+this.audio.autoplay = true;  // ✅ auto start once ready
 
     // Use <source> child for MIME (audio.type is not used)
     const srcEl = document.createElement('source');
@@ -876,14 +877,13 @@ if (cancelSleepBtn) {
     a.addEventListener('loadeddata', ()=>{ this._lastTimeUpdate = performance.now(); });
     a.addEventListener('canplay', ()=>{ this._lastTimeUpdate = performance.now(); });
 
-    a.addEventListener('stalled', ()=>{
-      this.setPill('Buffering…','warn');
-      this.log('stalled (advisory)');
-    });
-    a.addEventListener('waiting', ()=>{
-      this.setPill('Buffering…','warn');
-      this.log('waiting (buffer under-run)');
-    });
+    a.addEventListener('canplay', ()=>{
+  this._lastTimeUpdate = performance.now();
+  this.audio.play().catch(()=>{}); // ✅ auto-resume once it’s ready
+});
+
+
+
     a.addEventListener('ended', ()=>{
       this.log('ended signaled on live stream; watchdog will decide.');
     });
@@ -1034,6 +1034,48 @@ if (cancelSleepBtn) {
     if (this.audio) this.audio.volume = prevVol;
 
     await this.audio.play();
+    a.addEventListener('play', ()=>{
+  // 🔊 Force resume AudioContext and reconnect if needed
+  try {
+    if (this.ctx && this.ctx.state !== "running") {
+      this.ctx.resume().then(() => {
+        this._disconnectGraph();
+        this._wireAudioGraph();
+      });
+    }
+  } catch(e) {
+    this.log("Context resume failed: " + e.message);
+  }
+  // 🔊 Ensure AudioContext is active and connected
+  try {
+    if (this.ctx && this.ctx.state !== "running") {
+      this.ctx.resume().then(() => {
+        this._disconnectGraph();
+        this._wireAudioGraph();
+      });
+    }
+  } catch (err) {
+    this.log("Context resume failed: " + err.message);
+  }
+
+  this.setPill('Playing','ok');
+  this.$play.textContent = '⏸ Pause';
+  this.isUserPaused = false;
+  this._startWatchdog();
+  this._setWarmup(6000);
+  this._lastTimeUpdate = performance.now();
+  this._lastCt = a.currentTime || 0;
+  bindMini(this);
+  persistLast(this.station.id);
+  this._startUptime();
+  if ('mediaSession' in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({ title: this.station.name, artist: 'Live Radio', album: 'Stream', artwork: [] });
+    navigator.mediaSession.setActionHandler('play', ()=>this.safePlay());
+    navigator.mediaSession.setActionHandler('pause', ()=>this.pause());
+    navigator.mediaSession.setActionHandler('stop', ()=>this.stop());
+  }
+});
+
     this.setPill('Playing','ok');
     this.$play.textContent = '⏸ Pause';
     this.isUserPaused = false;
@@ -1411,7 +1453,7 @@ if ('mediaSession' in navigator){
 
 /* ===== Changelog / Patch Notes ===== */
 // v2.2.0 minor update
-const APP_VERSION = '2.2.2';  // <- bump when you ship updates
+const APP_VERSION = '2.2.3';  // <- bump when you ship updates
 LS.LAST_SEEN_VER = 'fm.lastSeenVersion';
 LS.SHOW_CHANGELOG = 'fm.showChangelog';
 
@@ -1423,17 +1465,14 @@ if (localStorage.getItem(LS.SHOW_CHANGELOG) === null) {
 // Your patch notes data (newest first)
 const PATCH_NOTES = [
   {
-  version: '2.2.2',
-  date: '2025-09-13',
+  version: '2.2.3',
+  date: '2025-10-17',
   highlights: [
-    'Auto device detection: sets [data-device] to mobile/tablet/desktop/tv/quest based on screen + UA.',
-    'Sleep Timer: stop all stations after N minutes with optional 10s fade.',
-    'Deep-link autostart: use ?play=<stationId> to auto-play on load.',
-    'Favorites filter persists across sessions.'
+'Removed buffering behavior and indicators.',
+'Improved continuous playback with fewer interruptions.'
   ],
   fixes: [
-    'Improved initial resume timing with one-shot warmup guard.',
-    'Safer URL param parsing and defensive checks around last-play resume.'
+     'Minor internal cleanup around audio event handlers.'
   ]
 },
 
