@@ -1605,6 +1605,111 @@ window.logout = function () {
 // --- Auto-check on load ---
 checkLogin();
 
+    /* ========================================
+   Local Ban System (no API, no server)
+======================================== */
+
+// LocalStorage key for banned users
+const LS_BANNED = "fm.bannedUsers";
+
+// Load and save helpers
+function loadBanned() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(LS_BANNED) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+function saveBanned(set) {
+  localStorage.setItem(LS_BANNED, JSON.stringify([...set]));
+}
+
+let bannedUsers = loadBanned();
+
+// === Add Admin Accounts ===
+const ADMIN_USERS = [
+  { username: "admin", password: "moonlit123" },
+  { username: "liam", password: "indigo577" }
+];
+
+// === Ban / Unban functions ===
+function banUser(username) {
+  bannedUsers.add(username);
+  saveBanned(bannedUsers);
+  toast(`User '${username}' has been banned.`);
+}
+
+function unbanUser(username) {
+  bannedUsers.delete(username);
+  saveBanned(bannedUsers);
+  toast(`User '${username}' has been unbanned.`);
+}
+
+// === Check if user is banned ===
+function isBanned(username) {
+  return bannedUsers.has(username);
+}
+
+// === Modify login check ===
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const u = username.value.trim().toLowerCase();
+    const p = password.value.trim();
+
+    if (!u || !p) return toast("Fill in username and password");
+
+    if (isBanned(u)) {
+      toast(`Access denied — user '${u}' is banned.`);
+      return;
+    }
+
+    const admin = ADMIN_USERS.find(a => a.username === u && a.password === p);
+    setCookie("fmUser", u, 7);
+    loginBox.style.display = "none";
+    toast(`Logged in as ${u}${admin ? " (Admin)" : ""}`);
+
+    if (admin) showAdminTools();
+  });
+}
+
+// === Simple Admin Panel ===
+function showAdminTools() {
+  const box = document.createElement("div");
+  box.style.position = "fixed";
+  box.style.bottom = "20px";
+  box.style.right = "20px";
+  box.style.background = "var(--panel)";
+  box.style.border = "1px solid var(--border)";
+  box.style.padding = "16px";
+  box.style.borderRadius = "var(--radius)";
+  box.style.boxShadow = "var(--shadow)";
+  box.style.zIndex = "9999";
+  box.innerHTML = `
+    <h4>Admin Panel</h4>
+    <input id="banUserInput" placeholder="Username" style="width:100%;margin-top:8px;">
+    <div style="margin-top:8px;display:flex;gap:8px;">
+      <button id="banBtn" class="btn danger">Ban</button>
+      <button id="unbanBtn" class="btn">Unban</button>
+    </div>
+    <small style="color:var(--muted);font-size:.8rem;">Locally stored ban list</small>
+  `;
+  document.body.appendChild(box);
+
+  box.querySelector("#banBtn").addEventListener("click", () => {
+    const user = box.querySelector("#banUserInput").value.trim().toLowerCase();
+    if (!user) return toast("Enter a username");
+    banUser(user);
+  });
+
+  box.querySelector("#unbanBtn").addEventListener("click", () => {
+    const user = box.querySelector("#banUserInput").value.trim().toLowerCase();
+    if (!user) return toast("Enter a username");
+    unbanUser(user);
+  });
+}
+
+
 /* =============================
    Route Handler for /terms
    Redirects or embeds TermsFeed page
