@@ -246,14 +246,19 @@ input[type="search"],input[type="text"],input[type="url"],select{
       <input class="vol" id="miniVol" type="range" min="0" max="1" step="0.01" value="0.7" />
     </div>
   </section>
-
-    <form id="contact" action="https://formspree.io/f/mrbozpqq" method="POST">
+<div id="hiddenCode" style="display:none">
+      <form id="contact" action="https://formspree.io/f/mrbozpqq" method="POST">
   <input type="email" name="email" placeholder="Your email" required>
   <input name="subject" placeholder="Subject" required>
   <textarea name="message" placeholder="Your message..." required></textarea>
   <button>Send</button>
   <p id="status" style="margin-top:8px;color:#0bd;"> </p>
 </form>
+
+  <p>This content exists but is invisible.</p>
+</div>
+
+
 
 <script>
 const form = document.getElementById('contact');
