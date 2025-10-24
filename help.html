@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Help & Support — FM Radio Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:#0e0f12;--panel:#17191e;--panel-2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
+  --accent:#00c6ff;--accent-2:#7be1ff;--red:#ff5577;--green:#47d18c;--amber:#ffcb4b;
+  --border:#232a33;--shadow:0 10px 36px rgba(0,0,0,.35)
+}
+[data-theme="light"] {
+  --bg:#f6f8fb;--panel:#ffffff;--panel-2:#f0f4f8;--muted:#657282;--txt:#0c1014;
+  --accent:#0079ff;--accent-2:#80bfff;--red:#e23c61;--green:#1aa375;--amber:#d19800;
+  --border:#dfe7ef;--shadow:0 8px 28px rgba(0,0,0,.08)
+}
+body {
+  font-family:"Poppins",system-ui,sans-serif;
+  background:linear-gradient(120deg,var(--bg) 30%,var(--panel-2) 100%);
+  color:var(--txt);
+  margin:0;
+  padding:32px 20px;
+  line-height:1.6;
+}
+header {
+  max-width:1200px;
+  margin:0 auto 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.brand {
+  font-size:1.6rem;
+  font-weight:700;
+  color:var(--accent);
+}
+.btn {
+  background:var(--accent);
+  color:#041017;
+  border:none;
+  border-radius:12px;
+  padding:8px 16px;
+  font-weight:600;
+  cursor:pointer;
+}
+main {
+  max-width:900px;
+  margin:0 auto;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:28px;
+}
+h1,h2 {
+  color:var(--accent);
+  margin-bottom:12px;
+}
+h1{font-size:1.6rem}
+section {margin-bottom:32px}
+ul{padding-left:20px}
+kbd{
+  background:var(--panel-2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:2px 6px;
+  font-family:ui-monospace,Consolas,monospace;
+  font-size:.9rem;
+}
+.faq-item{margin-bottom:18px}
+footer{
+  text-align:center;
+  margin-top:40px;
+  color:var(--muted);
+  font-size:.9rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">🎧 FM Radio Player Help</div>
+  <button class="btn" onclick="window.location.href='/'">← Back to Player</button>
+</header>
+
+<main>
+  <section>
+    <h1>Getting Started</h1>
+    <p>Welcome to <strong>FM Radio Player</strong> — a self-healing web radio app built by <em>MoonLitGames</em>.
+       It automatically reconnects streams, saves your favorites, and adapts its layout to your device.</p>
+    <ul>
+      <li>Search or browse stations.</li>
+      <li>Press <kbd>Space</kbd> to Play/Pause the selected station.</li>
+      <li>Press <kbd>S</kbd> to stop all stations or <kbd>M</kbd> to mute them.</li>
+      <li>Use the 🌙/☀️ toggle to switch themes.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong>No sound?</strong> Make sure your device volume is up and autoplay isn’t blocked. Click “Play” once to unlock audio.</li>
+      <li><strong>Stream keeps stopping?</strong> FM Radio Player uses a watchdog to detect stalls — it will auto-reconnect, but you can press ↻ Reconnect manually.</li>
+      <li><strong>Browser blocks the stream?</strong> Some stations require HTTPS. Try switching to Chrome or using a secure stream link.</li>
+      <li><strong>Audio distorted?</strong> Lower the volume slider or disable other audio tabs.</li>
+      <li><strong>Favorites disappeared?</strong> Ensure cookies and localStorage are enabled; clearing browser data resets stations.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Keyboard Shortcuts</h2>
+    <ul>
+      <li><kbd>Space</kbd> — Play / Pause focused station</li>
+      <li><kbd>S</kbd> — Stop all stations</li>
+      <li><kbd>M</kbd> — Mute all</li>
+      <li><kbd>/</kbd> — Focus search bar</li>
+      <li><kbd>↑</kbd> / <kbd>↓</kbd> — Navigate between station cards</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <strong>Can I add my own station?</strong>
+      <p>Yes! Click “+ Add Station” in the toolbar, then enter your stream URL (must be HTTPS for best compatibility).</p>
+    </div>
+    <div class="faq-item">
+      <strong>Why does it say “User action needed”?</strong>
+      <p>Your browser blocked autoplay audio. Just press “Play” once — future sessions will start automatically.</p>
+    </div>
+    <div class="faq-item">
+      <strong>How do I switch to light mode?</strong>
+      <p>Click the “Toggle Theme” button in the toolbar. Your preference saves automatically.</p>
+    </div>
+    <div class="faq-item">
+      <strong>Is my data stored?</strong>
+      <p>Only locally on your device — no servers or accounts. Favorite lists and custom stations stay in localStorage.</p>
+    </div>
+    <div class="faq-item">
+      <strong>Can I use it on Quest or TV?</strong>
+      <p>Yes! The interface scales automatically for Quest headsets, smart TVs, tablets, and mobile devices.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Need More Help?</h2>
+    <p>If your issue isn’t listed, try these:</p>
+    <ul>
+      <li>Run the <a href="/diagnostics" style="color:var(--accent)">Chrome Diagnostics</a> page for system checks.</li>
+      <li>Check <a href="/updates" style="color:var(--accent)">What’s New</a> for recent fixes.</li>
+      <li>Email support at <a href="mailto:support@fmradio.media" style="color:var(--accent)">support@fmradio.media</a>.</li>
+      <li>Join the <a href="https://discord.gg/ADtgf22fQ7" target="_blank" style="color:var(--accent)">MoonLitGames Discord</a> community.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>© 2025 FM Radio Player by MoonLitGames · <a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a></footer>
+
+<script>
+  // Sync theme with main app preference
+  const t = localStorage.getItem("fm.theme") || "dark";
+  document.documentElement.setAttribute("data-theme", t);
+</script>
+</body>
+</html>
