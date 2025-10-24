@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>API & System Overview — FM Radio Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0e0f12;--panel:#17191e;--panel-2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
+  --accent:#00c6ff;--accent-2:#7be1ff;--red:#ff5577;--green:#47d18c;--amber:#ffcb4b;
+  --border:#232a33;--shadow:0 10px 36px rgba(0,0,0,.35)
+}
+[data-theme="light"]{
+  --bg:#f6f8fb;--panel:#ffffff;--panel-2:#f0f4f8;--muted:#657282;--txt:#0c1014;
+  --accent:#0079ff;--accent-2:#80bfff;--red:#e23c61;--green:#1aa375;--amber:#d19800;
+  --border:#dfe7ef;--shadow:0 8px 28px rgba(0,0,0,.08)
+}
+body{
+  font-family:"Poppins",system-ui,sans-serif;
+  background:linear-gradient(120deg,var(--bg) 30%,var(--panel-2) 100%);
+  color:var(--txt);
+  margin:0;padding:32px 20px;line-height:1.7;
+}
+header{
+  max-width:1200px;margin:0 auto 24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+}
+.brand{font-size:1.6rem;font-weight:700;color:var(--accent);}
+.btn{
+  background:var(--accent);color:#041017;border:none;border-radius:12px;
+  padding:8px 16px;font-weight:600;cursor:pointer;
+}
+main{
+  max-width:900px;margin:0 auto;background:var(--panel);border:1px solid var(--border);
+  border-radius:16px;box-shadow:var(--shadow);padding:28px;
+}
+h1,h2{color:var(--accent);margin-bottom:10px}
+h1{font-size:1.6rem}
+code{
+  background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
+  padding:2px 6px;font-family:ui-monospace,Consolas,monospace;font-size:.9rem;
+}
+pre{
+  background:var(--panel-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px;overflow:auto;color:var(--accent-2);
+}
+footer{text-align:center;margin-top:40px;color:var(--muted);font-size:.9rem;}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">⚙️ FM Radio Player — API Overview</div>
+  <button class="btn" onclick="window.location.href='/'">← Back to Player</button>
+</header>
+
+<main>
+<section>
+  <h1>How FM Radio Player Works</h1>
+  <p>FM Radio Player is a <strong>client-side web application</strong> built with JavaScript and the Web Audio API.  
+     It doesn’t depend on a backend server — every action happens securely in your browser.</p>
+</section>
+
+<section>
+  <h2>Audio Fetch System</h2>
+  <p>Each radio station is defined as a JSON object with a <code>src</code> stream URL and optional <code>fallbacks</code>.  
+     The app creates an <code>&lt;audio&gt;</code> element and injects the stream dynamically:</p>
+
+<pre><code>{
+  "id": "k95",
+  "name": "K95 95.3 FM",
+  "src": "https://stream.rcs.revma.com/uqgf3huv57uvv",
+  "mime": "audio/mpeg",
+  "fallbacks": [
+    "https://backup-stream.example.com/k95.mp3"
+  ]
+}</code></pre>
+
+  <p>When playback starts, FM Radio Player:</p>
+  <ol>
+    <li>Builds an <code>Audio()</code> element with <code>crossOrigin="anonymous"</code>.</li>
+    <li>Attaches a <code>MediaElementSourceNode</code> to a shared <code>AudioContext</code>.</li>
+    <li>Connects it to a <code>GainNode</code> (volume) and <code>AnalyserNode</code> (equalizer).</li>
+    <li>Plays through <code>ctx.destination</code> and monitors <code>readyState</code> for progress.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Self-Healing Playback (Watchdog)</h2>
+  <p>A built-in “watchdog” checks the stream every second:</p>
+  <ul>
+    <li>If no progress is detected for <code>watchdogSecs</code> (≈ 20 s), it logs an error and retries.</li>
+    <li>Reconnection uses exponential back-off (2 → 4 → 8 → 16 s) with random jitter.</li>
+    <li>After several failed attempts, it loops with steady 30 s retries until recovered.</li>
+  </ul>
+  <p>The result is continuous, self-healing streaming — ideal for mobile or unstable networks.</p>
+</section>
+
+<section>
+  <h2>Local Storage & Persistence</h2>
+  <ul>
+    <li><code>fm.stations</code> — user-added custom stations</li>
+    <li><code>fm.favorites</code> — starred stations</li>
+    <li><code>fm.volume</code> — default volume</li>
+    <li><code>fm.theme</code> — dark/light preference</li>
+    <li><code>fm.last</code> — last played station</li>
+  </ul>
+  <p>All data stays <strong>on your device</strong>; nothing is uploaded to external servers.</p>
+</section>
+
+<section>
+  <h2>External APIs Used</h2>
+  <p>FM Radio Player uses a few public endpoints for optional features:</p>
+  <ul>
+    <li><strong>ipify API</strong> (<code>https://api.ipify.org?format=json</code>) — diagnostics / IP check</li>
+    <li><strong>TermsFeed Embed</strong> — loads live Terms & Privacy policy pages</li>
+    <li><strong>Amperwave / Revma Streams</strong> — official radio station stream providers</li>
+    <li><strong>Google Ads / AdSense</strong> — monetization script (non-personalized)</li>
+  </ul>
+  <p>No tracking pixels or analytics libraries are used by default.</p>
+</section>
+
+<section>
+  <h2>Example: Station API Schema</h2>
+<pre><code>{
+  id: string,          // Unique internal ID
+  name: string,        // Display name
+  src: string,         // Primary stream URL (HTTPS preferred)
+  mime: string,        // MIME type (audio/mpeg, audio/aacp, etc.)
+  fallbacks: string[], // Optional secondary endpoints
+  watchdog: number,    // Watchdog timeout in seconds
+  maxExp: number       // Max backoff exponent (2^n)
+}</code></pre>
+</section>
+
+<section>
+  <h2>Security & Browser Permissions</h2>
+  <p>The app requests no special permissions. However:</p>
+  <ul>
+    <li>Autoplay may be blocked until the user interacts (browser policy).</li>
+    <li>Mixed content (<code>http://</code> on an <code>https://</code> site) is automatically blocked.</li>
+    <li>Cookies are used only for login and admin panels.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Developer Integration</h2>
+  <p>You can embed any station using a simple iframe:</p>
+<pre><code>&lt;iframe
+  src="https://fmradio.media/embed?play=k95"
+  width="320"
+  height="180"
+  style="border:none;border-radius:12px"&gt;&lt;/iframe&gt;</code></pre>
+  <p>Or request station data programmatically:</p>
+<pre><code>fetch("https://fmradio.media/stations.json")
+  .then(res => res.json())
+  .then(list => console.log(list));</code></pre>
+</section>
+
+<section>
+  <h2>Architecture Overview</h2>
+  <ul>
+    <li>🧩 <strong>Front-end:</strong> Vanilla JS + Web Audio API + localStorage</li>
+    <li>💾 <strong>Persistence:</strong> Browser-local (no external DB)</li>
+    <li>🔁 <strong>Stream Healing:</strong> Watchdog + Retry Backoff</li>
+    <li>🎨 <strong>UI Layer:</strong> Responsive, device-aware design (mobile → Quest → desktop)</li>
+    <li>🔒 <strong>Security:</strong> HTTPS only, no remote login API, cookie isolation</li>
+  </ul>
+</section>
+</main>
+
+<footer>
+  © 2025 FM Radio Player by MoonLitGames · 
+  <a href="/help" style="color:inherit">Help</a> · 
+  <a href="/privacy" style="color:inherit">Privacy</a> · 
+  <a href="/terms" style="color:inherit">Terms</a>
+</footer>
+
+<script>
+// Sync theme with main app
+const theme = localStorage.getItem("fm.theme") || "dark";
+document.documentElement.setAttribute("data-theme", theme);
+</script>
+</body>
+</html>
