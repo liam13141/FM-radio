@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KidSafe Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0e0f12;--panel:#17191e;--panel2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
+    --accent:#41e2ff;--accent2:#7be1ff;--green:#47d18c;--amber:#ffcb4b;--red:#ff5577;--border:#242a33;
+    --radius:16px; --shadow:0 14px 36px rgba(0,0,0,.35)
+  }
+  [data-theme="light"]{
+    --bg:#f6f8fb;--panel:#ffffff;--panel2:#f1f5f9;--muted:#5c6b77;--txt:#0c1014;
+    --accent:#0079ff;--accent2:#9ad1ff;--green:#1aa375;--amber:#d19800;--red:#e23c61;--border:#dfe7ef;
+    --shadow:0 10px 28px rgba(0,0,0,.08)
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:
+      radial-gradient(1400px 600px at 0% -10%, #1c273422, transparent 60%),
+      linear-gradient(120deg,var(--bg) 30%, var(--panel2) 110%);
+    color:var(--txt); font-family:"Poppins",system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    min-height:100vh; display:flex; flex-direction:column; gap:16px; padding:22px;
+  }
+  header{max-width:1100px; margin:0 auto; width:100%; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .brand{font-weight:700; font-size:1.5rem; letter-spacing:.2px; color:var(--accent)}
+  .mode{margin-left:auto; display:flex; gap:8px; align-items:center}
+  .badge{border:1px solid var(--border); background:var(--panel2); color:var(--muted); padding:4px 10px; border-radius:999px; font-size:.9rem}
+  .btn{background:var(--accent); color:#041017; border:none; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer}
+  .btn.ghost{background:transparent; color:var(--txt); border:1px dashed var(--border)}
+  .btn.warn{background:#201d12; color:#ffd876; border:1px solid #3a3218}
+  .btn.small{padding:8px 10px; font-weight:600}
+  .btn:disabled{opacity:.6; cursor:not-allowed}
+  .searchbar{
+    max-width:1100px; margin:0 auto; width:100%; display:flex; gap:10px; align-items:center; flex-wrap:wrap
+  }
+  .input{
+    flex:1; min-width:260px; background:var(--panel); border:1px solid var(--border); color:var(--txt);
+    padding:14px 16px; border-radius:14px; outline:none; font-size:1rem;
+  }
+  .chips{max-width:1100px; margin:0 auto; width:100%; display:flex; gap:8px; flex-wrap:wrap}
+  .chip{cursor:pointer; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:var(--panel); color:var(--muted); font-size:.9rem}
+  .chip.active{background:var(--accent); color:#041017; border-color:transparent}
+  main{max-width:1100px; margin:0 auto; width:100%}
+  .note{margin:6px 0 2px; color:var(--muted); font-size:.95rem}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:12px}
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px; display:flex; flex-direction:column; gap:8px; min-height:120px
+  }
+  .row{display:flex; align-items:center; gap:10px}
+  .logo{
+    flex:0 0 44px; height:44px; border-radius:12px; display:grid; place-items:center; font-weight:800;
+    background:radial-gradient(circle at 30% 30%, var(--accent2), var(--accent)); color:#0b0c0f;
+    box-shadow:0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent)
+  }
+  .title{font-weight:700}
+  .desc{color:var(--muted); font-size:.95rem}
+  .pill{margin-left:auto; padding:4px 8px; border-radius:999px; background:var(--panel2); border:1px solid var(--border); color:var(--muted); font-size:.85rem}
+  .ok{color:var(--green); border-color:#234b37; background:#0f1f1a}
+  .warn{color:var(--amber); border-color:#3b3320; background:#1f1a0e}
+  .bad{color:var(--red); border-color:#402229; background:#1a0f12}
+  .footer{margin-top:auto; text-align:center; color:var(--muted); font-size:.9rem}
+  details{background:var(--panel2); border:1px solid var(--border); border-radius:12px; padding:10px}
+  summary{cursor:pointer}
+  .toast{position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:8px; z-index:30}
+  .msg{background:var(--panel); border:1px solid var(--border); padding:10px 12px; border-radius:12px}
+  /* Dialog */
+  dialog{border:none; border-radius:16px; max-width:680px; width:92%; background:var(--panel); color:var(--txt); padding:18px; border:1px solid var(--border); box-shadow:var(--shadow)}
+  dialog::backdrop{background:rgb(0 0 0 / .45)}
+  .formgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .formgrid-1{display:grid; grid-template-columns:1fr; gap:10px}
+  input[type="text"],input[type="url"],input[type="password"],textarea,select{
+    background:var(--panel2); border:1px solid var(--border); border-radius:12px; color:var(--txt); width:100%; padding:10px 12px; outline:none
+  }
+  textarea{min-height:80px; resize:vertical}
+  .toolbar{display:flex; gap:8px; align-items:center}
+  .hr{height:1px; background:var(--border); margin:6px 0}
+  .hint{color:var(--muted); font-size:.9rem}
+  .result-url{font-size:.85rem; color:var(--accent2); word-break:break-all}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">🔎 KidSafe Search</div>
+    <div class="mode">
+      <span class="badge" id="safetyBadge">Safety: Strict</span>
+      <button class="btn small" id="themeBtn">Toggle Theme</button>
+      <button class="btn small" id="parentBtn">Parental Controls</button>
+    </div>
+  </header>
+
+  <div class="searchbar">
+    <input id="q" class="input" type="search" placeholder="Search topics (e.g., planets, dinosaurs, fractions, coding)…" />
+    <button id="go" class="btn">Search</button>
+    <button id="clear" class="btn ghost">Clear</button>
+  </div>
+
+  <div class="chips" id="chipBar"></div>
+
+  <main>
+    <div id="status" class="note">Type to search kid-safe resources. Unsafe queries are blocked automatically.</div>
+    <div id="grid" class="grid"></div>
+
+    <details style="margin-top:16px">
+      <summary>What is this?</summary>
+      <p class="hint">This page is a **curated, kid-friendly search** that never hits Google’s Custom Search API. It searches a parent-approved whitelist stored locally. Parents can add/remove sites and blocked words in the Parental Controls panel.</p>
+    </details>
+  </main>
+
+  <div class="footer">© 2025 KidSafe Search · No tracking · No external search APIs</div>
+  <div class="toast" id="toast"></div>
+
+  <!-- Parental Controls -->
+  <dialog id="parentDialog">
+    <form method="dialog" id="parentForm">
+      <h3>Parental Controls</h3>
+      <div class="hint">Protected with a local PIN. Configure whitelist, categories, and blocked words.</div>
+      <div class="hr"></div>
+      <div class="formgrid-1">
+        <label>Enter PIN <input id="pinInput" type="password" placeholder="Default 0000" /></label>
+        <div class="toolbar">
+          <button class="btn small" id="unlockBtn" type="button">Unlock</button>
+          <button class="btn small warn" id="setPinBtn" type="button">Set/Change PIN</button>
+          <span class="hint" id="lockHint"></span>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+      <h4>Categories</h4>
+      <div class="formgrid-1">
+        <textarea id="categoriesBox" placeholder='One per line, e.g.:
+Science
+Math
+History
+Coding
+Art
+Nature'></textarea>
+        <div class="hint">Categories shown as chips. Search can filter by these.</div>
+      </div>
+
+      <div class="hr"></div>
+      <h4>Blocked Words</h4>
+      <div class="formgrid-1">
+        <textarea id="blockedBox" placeholder="Comma-separated list of blocked words/phrases"></textarea>
+        <div class="hint">Queries containing these will be blocked. (Basic kid-safe list included.)</div>
+      </div>
+
+      <div class="hr"></div>
+      <h4>Whitelist (sites & pages)</h4>
+      <div class="formgrid">
+        <input id="wTitle" type="text" placeholder="Title (e.g., NASA Space Place)" />
+        <input id="wUrl" type="url" placeholder="https://example.com/learn/space" />
+        <input id="wCategory" type="text" placeholder="Category (e.g., Science)" />
+        <input id="wTags" type="text" placeholder="Tags (comma separated: planets,space,kids)" />
+      </div>
+      <div class="toolbar" style="margin-top:8px">
+        <button class="btn small" id="addItemBtn" type="button">Add Item</button>
+        <button class="btn small warn" id="clearAllBtn" type="button">Reset to Defaults</button>
+      </div>
+      <div class="hr"></div>
+      <div class="toolbar">
+        <button class="btn" id="saveBtn" value="default">Save & Close</button>
+        <button class="btn ghost" id="cancelBtn">Cancel</button>
+        <button class="btn small" id="exportBtn" type="button">Export JSON</button>
+        <label class="btn small">
+          Import JSON
+          <input id="importFile" type="file" accept="application/json" hidden />
+        </label>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+/* ==============================
+   Simple Kid-Safe Search (No Google CSE)
+   - Client-only, uses localStorage
+   - Curated whitelist + categories
+   - Blocked words filter
+   - PIN-protected parental controls
+============================== */
+
+const LS = {
+  DATA: 'kidsafe.data.v1',
+  THEME: 'kidsafe.theme',
+  PIN: 'kidsafe.pin'
+};
+
+const defaultCategories = [
+  "Science","Math","Reading","Writing","History","Geography",
+  "Coding","Art","Music","Nature","Space","Health","Life Skills"
+];
+
+const defaultBlocked = [
+  // core safety (keep broad but family-safe)
+  "adult","sex","porn","nsfw","drugs","gambling","casino","violence",
+  "weapon","guns","hate","abuse","gore","suicide","self-harm","blood",
+  "nude","explicit","dating","torture","kill","murder"
+];
+
+// A small starter whitelist (parents can expand)
+const defaultWhitelist = [
+  {title:"NASA Space Place — For Kids", url:"https://spaceplace.nasa.gov/", category:"Space", tags:["space","planets","science","nasa"]},
+  {title:"National Geographic Kids", url:"https://kids.nationalgeographic.com/", category:"Nature", tags:["animals","geography","nature","science"]},
+  {title:"Smithsonian for Kids", url:"https://www.si.edu/kids", category:"History", tags:["history","museum","culture","science"]},
+  {title:"BBC Bitesize (Primary)", url:"https://www.bbc.co.uk/bitesize/primary", category:"Math", tags:["math","science","reading","uk"]},
+  {title:"Khan Academy Kids (Info)", url:"https://learn.khanacademy.org/khan-academy-kids/", category:"Math", tags:["math","reading","learning"]},
+  {title:"Scratch — Create Stories, Games, and Animations", url:"https://scratch.mit.edu/", category:"Coding", tags:["coding","programming","games","animations"]},
+  {title:"Code.org — Hour of Code", url:"https://code.org/learn", category:"Coding", tags:["coding","block","learn","hour of code"]},
+  {title:"CoolMath4Kids", url:"https://www.coolmath4kids.com/", category:"Math", tags:["math","arithmetic","fractions"]},
+  {title:"DK Find Out!", url:"https://www.dkfindout.com/", category:"Science", tags:["facts","science","history","animals"]},
+  {title:"PBS Kids", url:"https://pbskids.org/", category:"Reading", tags:["reading","games","videos","pbs"]},
+  {title:"Britannica Kids", url:"https://kids.britannica.com/", category:"Geography", tags:["encyclopedia","facts","history","science"]},
+  {title:"National Park Service — Kids", url:"https://www.nps.gov/kids/", category:"Nature", tags:["parks","nature","history"]},
+  {title:"HowStuffWorks — Kids", url:"https://play.howstuffworks.com/tags/kids", category:"Science", tags:["how","science","explain"]},
+  {title:"Exploratorium — Science Snacks", url:"https://www.exploratorium.edu/snacks", category:"Science", tags:["experiments","hands-on","physics","chemistry"]},
+  {title:"NASA Climate Kids", url:"https://climatekids.nasa.gov/", category:"Science", tags:["climate","earth","weather"]},
+  {title:"Mystery Science (Open-and-go)", url:"https://mysteryscience.com/", category:"Science", tags:["lessons","experiments"]},
+  {title:"TypingClub — Learn to Type", url:"https://www.typingclub.com/", category:"Life Skills", tags:["typing","keyboard"]},
+  {title:"MusicTheory.net", url:"https://www.musictheory.net/", category:"Music", tags:["music","theory","practice"]}
+];
+
+function loadData(){
+  try { return JSON.parse(localStorage.getItem(LS.DATA) || 'null'); } catch { return null; }
+}
+function saveData(d){
+  localStorage.setItem(LS.DATA, JSON.stringify(d));
+}
+function getTheme(){ return localStorage.getItem(LS.THEME) || 'dark'; }
+function setTheme(t){ localStorage.setItem(LS.THEME, t); document.documentElement.setAttribute('data-theme', t); }
+function getPIN(){ return localStorage.getItem(LS.PIN) || '0000'; }
+function setPIN(p){ localStorage.setItem(LS.PIN, p); }
+
+let state = loadData() || { categories: defaultCategories, blocked: defaultBlocked, whitelist: defaultWhitelist };
+let unlocked = false;
+setTheme(getTheme());
+
+// UI refs
+const q = document.getElementById('q');
+const go = document.getElementById('go');
+const clearBtn = document.getElementById('clear');
+const grid = document.getElementById('grid');
+const statusEl = document.getElementById('status');
+const chipBar = document.getElementById('chipBar');
+const themeBtn = document.getElementById('themeBtn');
+const parentBtn = document.getElementById('parentBtn');
+const toastWrap = document.getElementById('toast');
+const safetyBadge = document.getElementById('safetyBadge');
+
+// Dialog refs
+const parentDialog = document.getElementById('parentDialog');
+const pinInput = document.getElementById('pinInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const setPinBtn = document.getElementById('setPinBtn');
+const lockHint = document.getElementById('lockHint');
+const categoriesBox = document.getElementById('categoriesBox');
+const blockedBox = document.getElementById('blockedBox');
+const wTitle = document.getElementById('wTitle');
+const wUrl = document.getElementById('wUrl');
+const wCategory = document.getElementById('wCategory');
+const wTags = document.getElementById('wTags');
+const addItemBtn = document.getElementById('addItemBtn');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const saveBtn = document.getElementById('saveBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const exportBtn = document.getElementById('exportBtn');
+const importFile = document.getElementById('importFile');
+
+// Helpers
+function toast(msg, ms=2200){
+  const el = document.createElement('div'); el.className='msg'; el.textContent = msg;
+  toastWrap.appendChild(el); setTimeout(()=>el.remove(), ms);
+}
+function blockedQuery(query){
+  const needles = state.blocked.map(w=>w.trim().toLowerCase()).filter(Boolean);
+  const qnorm = ' ' + query.toLowerCase().replace(/\W+/g,' ') + ' ';
+  return needles.some(w => qnorm.includes(' ' + w + ' '));
+}
+function matchScore(item, query, activeCat){
+  let score = 0;
+  const q = query.trim().toLowerCase();
+  const hay = [
+    item.title.toLowerCase(),
+    (item.category||'').toLowerCase(),
+    (item.tags||[]).join(' ').toLowerCase()
+  ].join(' ');
+  if (q && hay.includes(q)) score += 5;
+  const terms = q.split(/\s+/).filter(Boolean);
+  for (const t of terms){ if (hay.includes(t)) score += 2; }
+  if (activeCat && (item.category||'').toLowerCase() === activeCat.toLowerCase()) score += 3;
+  return score;
+}
+function sanitizeURL(u){
+  try {
+    const url = new URL(u);
+    // block http (mixed content) and suspicious TLDs quickly
+    if (url.protocol !== 'https:') return null;
+    const badTLDs = ['.onion','.zip','.mov']; // just-in-case
+    if (badTLDs.some(t => url.hostname.endsWith(t))) return null;
+    return url.toString();
+  } catch { return null; }
+}
+
+// Render chips
+let activeCategory = '';
+function renderChips(){
+  chipBar.innerHTML = '';
+  const allBtn = document.createElement('span');
+  allBtn.className = 'chip' + (activeCategory===''?' active':'');
+  allBtn.textContent = 'All';
+  allBtn.onclick = ()=>{ activeCategory=''; render(); };
+  chipBar.appendChild(allBtn);
+
+  for (const c of state.categories){
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (activeCategory===c?' active':'');
+    chip.textContent = c;
+    chip.onclick = ()=>{ activeCategory = (activeCategory===c ? '' : c); render(); };
+    chipBar.appendChild(chip);
+  }
+}
+
+// Render results
+function render(){
+  const query = q.value.trim();
+  grid.innerHTML = '';
+
+  if (!query){
+    statusEl.textContent = activeCategory ? `Showing: ${activeCategory}` : 'Type to search kid-safe resources.';
+    const list = state.whitelist
+      .filter(it => !activeCategory || (it.category||'')===activeCategory)
+      .slice(0, 12);
+    list.forEach(drawCard);
+    return;
+  }
+
+  if (blockedQuery(query)){
+    statusEl.innerHTML = '🚫 This search looks unsafe. Try a different topic (e.g., <b>planets</b>, <b>fractions</b>, <b>dinosaurs</b>, <b>coding</b>).';
+    return;
+  }
+
+  const scored = state.whitelist
+    .filter(it => !activeCategory || (it.category||'')===activeCategory)
+    .map(it => ({it, score: matchScore(it, query, activeCategory)}))
+    .filter(x => x.score > 0)
+    .sort((a,b)=> b.score - a.score)
+    .slice(0, 30);
+
+  if (scored.length === 0){
+    statusEl.textContent = 'No kid-safe matches found in your whitelist. Parents can add more sites in Parental Controls.';
+    return;
+  }
+
+  statusEl.textContent = `${scored.length} safe result${scored.length>1?'s':''} found`;
+  scored.forEach(({it}) => drawCard(it, query));
+}
+
+function drawCard(item, query=''){
+  const url = sanitizeURL(item.url);
+  if (!url) return; // filtered
+
+  // reject if title or tags contain blocked words (paranoid)
+  const meta = (item.title + ' ' + (item.tags||[]).join(' ')).toLowerCase();
+  if (state.blocked.some(w => meta.includes(w.toLowerCase()))) return;
+
+  const host = new URL(url).hostname.replace(/^www\./,'');
+  const card = document.createElement('div'); card.className = 'card';
+  const top = document.createElement('div'); top.className='row';
+  const logo = document.createElement('div'); logo.className='logo'; logo.textContent = host[0]?.toUpperCase() || 'K';
+  const title = document.createElement('div'); title.className='title'; title.textContent = item.title;
+  const pill = document.createElement('div'); pill.className='pill ok'; pill.textContent = item.category || 'General';
+  top.append(logo,title,pill);
+
+  const desc = document.createElement('div'); desc.className='desc';
+  const tagStr = (item.tags || []).slice(0,6).join(' • ');
+  desc.textContent = tagStr || 'curated resource';
+
+  const link = document.createElement('a');
+  link.href = url; link.target = '_blank'; link.rel='noopener noreferrer';
+  link.className = 'result-url'; link.textContent = url;
+
+  const open = document.createElement('div'); open.className='row';
+  const btn = document.createElement('a');
+  btn.href = url; btn.target='_blank'; btn.rel='noopener noreferrer';
+  btn.className='btn small'; btn.textContent='Open Resource';
+  open.append(btn);
+
+  card.append(top, desc, link, open);
+  grid.appendChild(card);
+}
+
+// Search interactions
+q.addEventListener('keydown', (e)=>{ if(e.key==='Enter') doSearch(); });
+go.addEventListener('click', doSearch);
+clearBtn.addEventListener('click', ()=>{ q.value=''; render(); });
+function doSearch(){
+  const query = q.value.trim();
+  if (!query) { render(); return; }
+  if (blockedQuery(query)){
+    statusEl.innerHTML = '🚫 This search looks unsafe. Try a different topic (e.g., <b>planets</b>, <b>fractions</b>, <b>dinosaurs</b>, <b>coding</b>).';
+    grid.innerHTML=''; return;
+  }
+  render();
+}
+
+// Theme & controls
+themeBtn.addEventListener('click', ()=>{
+  const next = (getTheme()==='dark') ? 'light' : 'dark';
+  setTheme(next);
+});
+
+// Parental Controls
+parentBtn.addEventListener('click', ()=>{
+  // preload current values
+  categoriesBox.value = state.categories.join('\n');
+  blockedBox.value = state.blocked.join(', ');
+  pinInput.value='';
+  lockHint.textContent = unlocked ? 'Unlocked' : 'Locked · Enter PIN to edit';
+  parentDialog.showModal();
+});
+
+unlockBtn.addEventListener('click', ()=>{
+  if (pinInput.value === getPIN()){
+    unlocked = true; lockHint.textContent = 'Unlocked'; toast('Parental controls unlocked');
+  } else { toast('Wrong PIN'); unlocked = false; lockHint.textContent='Locked · Enter PIN to edit'; }
+});
+setPinBtn.addEventListener('click', ()=>{
+  if (!unlocked){ toast('Unlock first'); return; }
+  const p = prompt('New 4-digit PIN:', getPIN());
+  if (!p) return;
+  if (!/^\d{4}$/.test(p)){ toast('PIN must be 4 digits'); return; }
+  setPIN(p); toast('PIN updated');
+});
+addItemBtn.addEventListener('click', ()=>{
+  if (!unlocked){ toast('Unlock first'); return; }
+  const title = wTitle.value.trim();
+  const url = wUrl.value.trim();
+  const cat = wCategory.value.trim() || 'General';
+  const tags = wTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!title || !url){ toast('Need title and URL'); return; }
+  const safe = sanitizeURL(url);
+  if (!safe){ toast('URL must be HTTPS and valid'); return; }
+  state.whitelist.push({title, url:safe, category:cat, tags});
+  wTitle.value=''; wUrl.value=''; wCategory.value=''; wTags.value='';
+  toast('Added to whitelist');
+  render();
+});
+clearAllBtn.addEventListener('click', ()=>{
+  if (!unlocked){ toast('Unlock first'); return; }
+  if (confirm('Reset categories, blocked words, and whitelist to defaults?')){
+    state = { categories: defaultCategories, blocked: defaultBlocked, whitelist: defaultWhitelist };
+    categoriesBox.value = state.categories.join('\n');
+    blockedBox.value = state.blocked.join(', ');
+    toast('Reset to defaults');
+    render();
+  }
+});
+saveBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  if (!unlocked){ toast('Unlock first'); return; }
+  const cats = categoriesBox.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const blocked = blockedBox.value.split(',').map(s=>s.trim()).filter(Boolean);
+  // keep existing whitelist
+  state.categories = cats.length ? cats : defaultCategories;
+  state.blocked = blocked.length ? blocked : defaultBlocked;
+  saveData(state);
+  parentDialog.close();
+  toast('Saved');
+  renderChips();
+  render();
+});
+cancelBtn.addEventListener('click', (e)=>{ e.preventDefault(); parentDialog.close(); });
+
+exportBtn.addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kidsafe-data.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+importFile.addEventListener('change', ()=>{
+  const f = importFile.files?.[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    try{
+      const obj = JSON.parse(fr.result);
+      if (!obj || !Array.isArray(obj.whitelist)) throw new Error('Invalid file');
+      state = {
+        categories: Array.isArray(obj.categories) && obj.categories.length ? obj.categories : defaultCategories,
+        blocked: Array.isArray(obj.blocked) && obj.blocked.length ? obj.blocked : defaultBlocked,
+        whitelist: obj.whitelist.filter(x=>x && x.title && x.url)
+      };
+      toast('Imported settings');
+      saveData(state);
+      renderChips(); render();
+    }catch(e){ toast('Import failed'); }
+  };
+  fr.readAsText(f);
+});
+
+// Init
+renderChips();
+render();
+safetyBadge.textContent = 'Safety: Strict';
+</script>
+</body>
+</html>
