@@ -1,129 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>System Diagnostics — FM Radio Player</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FM Radio Player — Chrome Diagnostics</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0e0f12;--panel:#17191e;--border:#232a33;--txt:#e9eef3;--accent:#00c6ff;
-  --green:#47d18c;--red:#ff5577;--amber:#ffcb4b;
+:root {
+  --bg: #0e0f12;
+  --panel: #17191e;
+  --border: #232a33;
+  --txt: #e9eef3;
+  --accent: #00c6ff;
+  --green: #47d18c;
+  --red: #ff5577;
+  --amber: #ffcb4b;
 }
-body{
-  font-family:"Poppins",system-ui,sans-serif;background:var(--bg);color:var(--txt);
-  padding:20px;display:flex;flex-direction:column;gap:16px;min-height:100vh;
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100vh;
 }
-h1{font-size:1.6rem;color:var(--accent)}
-section{background:var(--panel);border:1px solid var(--border);
-  border-radius:12px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
-button{background:var(--accent);border:none;color:#041017;font-weight:600;
-  border-radius:10px;padding:8px 12px;cursor:pointer}
-#log{font-family:ui-monospace,Consolas,monospace;
-  background:#10141a;border:1px solid var(--border);border-radius:8px;
-  padding:10px;max-height:320px;overflow:auto;white-space:pre-wrap}
-.bad{color:var(--red)}.ok{color:var(--green)}.warn{color:var(--amber)}
+h1 { color: var(--accent); font-size: 1.6rem; }
+section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+button {
+  background: var(--accent);
+  border: none;
+  color: #041017;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.log {
+  background: #10141a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: ui-monospace, Consolas, monospace;
+  padding: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+.ok { color: var(--green); }
+.bad { color: var(--red); }
+.warn { color: var(--amber); }
 </style>
 </head>
 <body>
-<h1>🔍 System Diagnostics / Data Tests</h1>
+<h1>🔍 Chrome System & Access Diagnostics</h1>
+<p>Perform deep browser, network, permission, and API tests. Best viewed in Google Chrome.</p>
+<button id="runBtn">▶ Run Full Diagnostics</button>
 
-<section>
-  <p>Run tests to inspect your environment, APIs, and connectivity.</p>
-  <button id="runBtn">▶ Run Diagnostics</button>
-</section>
-
-<section>
-  <h3>Results Log</h3>
-  <div id="log" aria-live="polite"></div>
-</section>
+<section><h2>🖥️ System Info</h2><div class="log" id="sysLog"></div></section>
+<section><h2>🌐 Network & IP</h2><div class="log" id="netLog"></div></section>
+<section><h2>🔒 Permissions & Access</h2><div class="log" id="permLog"></div></section>
+<section><h2>💾 Storage & Cookies</h2><div class="log" id="storLog"></div></section>
+<section><h2>🧠 Browser Environment</h2><div class="log" id="envLog"></div></section>
+<section><h2>📡 API & Connectivity Tests</h2><div class="log" id="apiLog"></div></section>
 
 <script>
-const logBox = document.getElementById("log");
-const log = (msg,cls="")=>{
+const logs = {
+  sys: document.getElementById("sysLog"),
+  net: document.getElementById("netLog"),
+  perm: document.getElementById("permLog"),
+  stor: document.getElementById("storLog"),
+  env: document.getElementById("envLog"),
+  api: document.getElementById("apiLog")
+};
+const log = (panel, msg, cls="")=>{
   const line=document.createElement("div");
   if(cls) line.className=cls;
   line.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
-  logBox.appendChild(line);
-  logBox.scrollTop=logBox.scrollHeight;
+  logs[panel].appendChild(line);
+  logs[panel].scrollTop=logs[panel].scrollHeight;
 };
 
-async function getPublicIP(){
+async function runDiagnostics(){
+  Object.values(logs).forEach(l=>l.textContent="");
+  log("sys","Running system diagnostics...","warn");
+
+  // ---- System Info ----
+  log("sys",`User Agent: ${navigator.userAgent}`);
+  log("sys",`Platform: ${navigator.platform}`);
+  log("sys",`Browser: ${navigator.userAgentData?.brands?.map(b=>b.brand+':'+b.version).join(', ') || 'N/A'}`);
+  log("sys",`Language: ${navigator.language}`);
+  log("sys",`Screen: ${screen.width}x${screen.height} @${window.devicePixelRatio}x`);
+  log("sys",`Hardware Concurrency: ${navigator.hardwareConcurrency || 'Unknown'}`);
+  if(navigator.gpu) log("sys",`GPU: ${JSON.stringify(navigator.gpu)}`);
+
+  // Battery
+  if(navigator.getBattery){
+    try{
+      const b=await navigator.getBattery();
+      log("sys",`Battery: ${Math.round(b.level*100)}% ${b.charging?"(Charging)":"(Discharging)"}`);
+    }catch(e){ log("sys","Battery info unavailable","bad"); }
+  }
+
+  // Memory
+  if(performance.memory){
+    log("sys",`JS Heap: ${(performance.memory.usedJSHeapSize/1048576).toFixed(1)}MB / ${(performance.memory.jsHeapSizeLimit/1048576).toFixed(1)}MB`);
+  }
+
+  // ---- Network ----
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if(conn){
+    log("net",`Connection Type: ${conn.effectiveType}`);
+    log("net",`Downlink: ${conn.downlink} Mb/s`);
+  }
+  log("net",`Online: ${navigator.onLine ? "✅ Online" : "❌ Offline"}`);
+
   try{
     const res=await fetch("https://api.ipify.org?format=json");
-    const j=await res.json();
-    return j.ip;
-  }catch(e){return null;}
-}
+    const ip=await res.json();
+    log("net",`Public IP: ${ip.ip}`,"ok");
+  }catch{ log("net","Failed to retrieve public IP","bad"); }
 
-async function testAPI(url,label){
-  const t0=performance.now();
-  try{
-    const res=await fetch(url);
-    const ms=Math.round(performance.now()-t0);
-    log(`✅ ${label} → ${res.status} (${ms}ms)`,"ok");
-  }catch(e){
-    log(`❌ ${label} failed: ${e.message}`,"bad");
-  }
-}
-
-async function runDiagnostics(){
-  log("=== Running Diagnostics ===","warn");
-
-  // Environment
-  log(`User Agent: ${navigator.userAgent}`);
-  log(`Platform: ${navigator.platform}`);
-  log(`Language: ${navigator.language}`);
-  log(`Screen: ${screen.width}x${screen.height}`);
-  log(`Device Pixel Ratio: ${window.devicePixelRatio}`);
-  log(`Online: ${navigator.onLine}`);
-
-  // Storage / cookies
-  try{
-    localStorage.setItem("fm_test","1");
-    localStorage.removeItem("fm_test");
-    log("LocalStorage ✅ available","ok");
-  }catch{ log("LocalStorage ❌ unavailable","bad"); }
-
-  try{
-    document.cookie="testcookie=1";
-    const hasCookie=document.cookie.includes("testcookie=");
-    log(`Cookies ${hasCookie?"✅ enabled":"❌ disabled"}`,hasCookie?"ok":"bad");
-  }catch{ log("Cookies ❌ blocked","bad"); }
-
-  // Connection type
-  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  if(conn){
-    log(`Connection: ${conn.effectiveType} (${conn.downlink}Mb/s)`);
+  // ---- Permissions ----
+  const perms = ["geolocation","notifications","camera","microphone","clipboard-read"];
+  for(const perm of perms){
+    try{
+      const p = await navigator.permissions.query({name:perm});
+      log("perm",`${perm}: ${p.state}`,(p.state==="granted"?"ok":p.state==="prompt"?"warn":"bad"));
+    }catch{ log("perm",`${perm}: unsupported`,"bad"); }
   }
 
-  // Public IP
-  const ip=await getPublicIP();
-  if(ip) log(`Public IP: ${ip}`,"ok");
-  else log("Failed to fetch public IP","bad");
+  // ---- Storage ----
+  try{
+    localStorage.setItem("fm_test","1"); localStorage.removeItem("fm_test");
+    log("stor","LocalStorage: ✅ accessible","ok");
+  }catch{ log("stor","LocalStorage: ❌ blocked","bad"); }
+  try{
+    await navigator.storage.estimate().then(s=>{
+      log("stor",`Quota: ${(s.quota/1e6).toFixed(1)}MB, Used: ${(s.usage/1e6).toFixed(1)}MB`);
+    });
+  }catch{ log("stor","Could not get storage info","bad"); }
 
-  // API endpoints to test
-  const apis=[
-    ["https://fmradio.media/status","FM Radio Media"],
-    ["https://api.ipify.org?format=json","ipify.org"],
-    ["https://jsonplaceholder.typicode.com/todos/1","JSONPlaceholder"],
+  try{
+    document.cookie="fm_cookie=1";
+    log("stor",`Cookies: ${document.cookie.includes("fm_cookie")?"✅ enabled":"❌ disabled"}`,
+        document.cookie.includes("fm_cookie")?"ok":"bad");
+  }catch{ log("stor","Cookies: ❌ blocked","bad"); }
+
+  // ---- Environment ----
+  log("env",`Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
+  log("env",`Device Memory: ${navigator.deviceMemory || "Unknown"}GB`);
+  log("env",`Do Not Track: ${navigator.doNotTrack}`);
+  log("env",`Service Worker: ${"serviceWorker" in navigator ? "Supported":"Not supported"}`);
+  log("env",`Clipboard API: ${"clipboard" in navigator ? "Supported":"Not supported"}`);
+  log("env",`Media Devices: ${(await navigator.mediaDevices.enumerateDevices()).length} devices`);
+
+  // ---- API / Connectivity Tests ----
+  const tests = [
+    ["https://fmradio.media/status","FM Radio API"],
+    ["https://jsonplaceholder.typicode.com/posts/1","JSONPlaceholder"],
+    ["https://api.github.com","GitHub API"],
   ];
-  for(const [url,label] of apis){
-    await testAPI(url,label);
+  for(const [url,name] of tests){
+    const t0=performance.now();
+    try{
+      const res=await fetch(url);
+      const ms=Math.round(performance.now()-t0);
+      log("api",`${name}: ${res.status} (${ms}ms)`,"ok");
+    }catch(e){
+      log("api",`${name}: failed (${e.message})`,"bad");
+    }
   }
 
-  // Ping your own domain (CORS friendly HEAD)
-  try{
-    const res=await fetch(location.origin,{method:"HEAD"});
-    log(`Self-check (${location.origin}) → ${res.status}`,"ok");
-  }catch(e){
-    log(`Self-check failed: ${e.message}`,"bad");
-  }
-
-  // Misc stats
-  log(`Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
-  log(`Memory (approx): ${(performance.memory?.usedJSHeapSize/1e6||0).toFixed(1)} MB`);
-  log("=== Tests Complete ===","warn");
+  log("api","Diagnostics complete.","warn");
 }
 
 document.getElementById("runBtn").addEventListener("click",runDiagnostics);
