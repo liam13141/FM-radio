@@ -163,6 +163,51 @@ input[type="search"],input[type="text"],input[type="url"],select{
 </head>
 <body>
 
+<!-- Maintenance Notice Modal -->
+<div id="staffNotice" role="dialog" aria-labelledby="staffTitle" aria-modal="true"
+     style="position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);z-index:99999;">
+  <div style="width:min(92vw,520px);background:#17191e;border:1px solid #232a33;color:#e9eef3;
+              border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.35);padding:18px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;">
+      <h3 id="staffTitle" style="margin:0;font:600 1.1rem/1.3 Poppins,system-ui;">Notice</h3>
+      <button id="staffClose" aria-label="Close notice"
+              style="background:#10141a;border:1px solid #232a33;color:#e9eef3;border-radius:10px;
+                     padding:6px 10px;cursor:pointer">✕</button>
+    </div>
+    <p style="margin:.8rem 0 0;color:#cfd6dd">
+      This website will not be updated due to lack of staff.
+    </p>
+    <p style="margin:.6rem 0 0;color:#9aa4ad;font-size:.9rem">
+      Existing features continue to work as-is. Thank you for understanding.
+    </p>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;color:#9aa4ad;font-size:.9rem">
+      <input id="staffDontShow" type="checkbox"> Don’t show this again
+    </label>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const KEY = "mlg.staffNotice.dismissed";
+    if (localStorage.getItem(KEY) === "1") {
+      document.getElementById("staffNotice").style.display = "none";
+      return;
+    }
+    const closeBtn = document.getElementById("staffClose");
+    const box = document.getElementById("staffNotice");
+    const dont = document.getElementById("staffDontShow");
+
+    function dismiss() {
+      if (dont.checked) localStorage.setItem(KEY, "1");
+      box.style.display = "none";
+    }
+    closeBtn.addEventListener("click", dismiss);
+    // close on ESC
+    document.addEventListener("keydown", e => { if (e.key === "Escape") dismiss(); });
+    // trap initial focus
+    setTimeout(() => closeBtn.focus(), 0);
+  })();
+</script>
 
     
     <div class="topbar" aria-label="Top Controls">
