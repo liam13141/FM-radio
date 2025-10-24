@@ -217,6 +217,30 @@ input[type="search"],input[type="text"],input[type="url"],select{
     </div>
   </section>
 
+    <form id="contact" action="https://formspree.io/f/mrbozpqq" method="POST">
+  <input type="email" name="email" placeholder="Your email" required>
+  <input name="subject" placeholder="Subject" required>
+  <textarea name="message" placeholder="Your message..." required></textarea>
+  <button>Send</button>
+  <p id="status" style="margin-top:8px;color:#0bd;"> </p>
+</form>
+
+<script>
+const form = document.getElementById('contact');
+const statusEl = document.getElementById('status');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.textContent = 'Sending...';
+  try {
+    const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept':'application/json' }});
+    if (res.ok) { form.reset(); statusEl.textContent = 'Sent! Check your inbox.'; }
+    else { statusEl.textContent = 'Failed to send. Try again.'; }
+  } catch { statusEl.textContent = 'Network error.'; }
+});
+</script>
+
+
   <footer>© 2025 FM Radio Player. All rights reserved.</footer>
   <div class="toast" id="toast"></div>
 
