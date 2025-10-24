@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>System Diagnostics — FM Radio Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0e0f12;--panel:#17191e;--border:#232a33;--txt:#e9eef3;--accent:#00c6ff;
+  --green:#47d18c;--red:#ff5577;--amber:#ffcb4b;
+}
+body{
+  font-family:"Poppins",system-ui,sans-serif;background:var(--bg);color:var(--txt);
+  padding:20px;display:flex;flex-direction:column;gap:16px;min-height:100vh;
+}
+h1{font-size:1.6rem;color:var(--accent)}
+section{background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+button{background:var(--accent);border:none;color:#041017;font-weight:600;
+  border-radius:10px;padding:8px 12px;cursor:pointer}
+#log{font-family:ui-monospace,Consolas,monospace;
+  background:#10141a;border:1px solid var(--border);border-radius:8px;
+  padding:10px;max-height:320px;overflow:auto;white-space:pre-wrap}
+.bad{color:var(--red)}.ok{color:var(--green)}.warn{color:var(--amber)}
+</style>
+</head>
+<body>
+<h1>🔍 System Diagnostics / Data Tests</h1>
+
+<section>
+  <p>Run tests to inspect your environment, APIs, and connectivity.</p>
+  <button id="runBtn">▶ Run Diagnostics</button>
+</section>
+
+<section>
+  <h3>Results Log</h3>
+  <div id="log" aria-live="polite"></div>
+</section>
+
+<script>
+const logBox = document.getElementById("log");
+const log = (msg,cls="")=>{
+  const line=document.createElement("div");
+  if(cls) line.className=cls;
+  line.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  logBox.appendChild(line);
+  logBox.scrollTop=logBox.scrollHeight;
+};
+
+async function getPublicIP(){
+  try{
+    const res=await fetch("https://api.ipify.org?format=json");
+    const j=await res.json();
+    return j.ip;
+  }catch(e){return null;}
+}
+
+async function testAPI(url,label){
+  const t0=performance.now();
+  try{
+    const res=await fetch(url);
+    const ms=Math.round(performance.now()-t0);
+    log(`✅ ${label} → ${res.status} (${ms}ms)`,"ok");
+  }catch(e){
+    log(`❌ ${label} failed: ${e.message}`,"bad");
+  }
+}
+
+async function runDiagnostics(){
+  log("=== Running Diagnostics ===","warn");
+
+  // Environment
+  log(`User Agent: ${navigator.userAgent}`);
+  log(`Platform: ${navigator.platform}`);
+  log(`Language: ${navigator.language}`);
+  log(`Screen: ${screen.width}x${screen.height}`);
+  log(`Device Pixel Ratio: ${window.devicePixelRatio}`);
+  log(`Online: ${navigator.onLine}`);
+
+  // Storage / cookies
+  try{
+    localStorage.setItem("fm_test","1");
+    localStorage.removeItem("fm_test");
+    log("LocalStorage ✅ available","ok");
+  }catch{ log("LocalStorage ❌ unavailable","bad"); }
+
+  try{
+    document.cookie="testcookie=1";
+    const hasCookie=document.cookie.includes("testcookie=");
+    log(`Cookies ${hasCookie?"✅ enabled":"❌ disabled"}`,hasCookie?"ok":"bad");
+  }catch{ log("Cookies ❌ blocked","bad"); }
+
+  // Connection type
+  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(conn){
+    log(`Connection: ${conn.effectiveType} (${conn.downlink}Mb/s)`);
+  }
+
+  // Public IP
+  const ip=await getPublicIP();
+  if(ip) log(`Public IP: ${ip}`,"ok");
+  else log("Failed to fetch public IP","bad");
+
+  // API endpoints to test
+  const apis=[
+    ["https://fmradio.media/status","FM Radio Media"],
+    ["https://api.ipify.org?format=json","ipify.org"],
+    ["https://jsonplaceholder.typicode.com/todos/1","JSONPlaceholder"],
+  ];
+  for(const [url,label] of apis){
+    await testAPI(url,label);
+  }
+
+  // Ping your own domain (CORS friendly HEAD)
+  try{
+    const res=await fetch(location.origin,{method:"HEAD"});
+    log(`Self-check (${location.origin}) → ${res.status}`,"ok");
+  }catch(e){
+    log(`Self-check failed: ${e.message}`,"bad");
+  }
+
+  // Misc stats
+  log(`Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
+  log(`Memory (approx): ${(performance.memory?.usedJSHeapSize/1e6||0).toFixed(1)} MB`);
+  log("=== Tests Complete ===","warn");
+}
+
+document.getElementById("runBtn").addEventListener("click",runDiagnostics);
+</script>
+</body>
+</html>
