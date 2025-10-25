@@ -225,6 +225,15 @@ input[type="search"],input[type="text"],input[type="url"],select{
         <button class="btn small" id="muteAll" title="Mute all stations (M)">Mute All</button>
         <button class="btn small" id="favoritesOnly" title="Show favorites only">★ Favorites</button>
         <button class="btn small main" id="addStation" title="Add your own station">+ Add Station</button>
+
+          
+<script>
+  document.getElementById('plansBtn').addEventListener('click', () => {
+    window.location.href = '/plans.html';
+  });
+</script>
+          
+        <button class="btn small main" id="addStation" title="view the plans for the website">Plans</button>
         <button class="btn small" id="exportBtn" title="Export stations JSON">Export</button>
         <button class="btn small" id="importBtn" title="Import stations JSON">Import</button>
       </div>
