@@ -226,14 +226,30 @@ input[type="search"],input[type="text"],input[type="url"],select{
         <button class="btn small" id="favoritesOnly" title="Show favorites only">★ Favorites</button>
         <button class="btn small main" id="addStation" title="Add your own station">+ Add Station</button>
 
-          
+
+<button id="plansBtn" style="
+  background:#00c6ff;
+  color:#041017;
+  font-weight:600;
+  border:none;
+  border-radius:12px;
+  padding:10px 20px;
+  cursor:pointer;
+  transition:all .2s ease;
+  box-shadow:0 6px 20px rgba(0,198,255,.25);
+">
+  📋 View Future Plans
+</button>
+
 <script>
   document.getElementById('plansBtn').addEventListener('click', () => {
     window.location.href = '/plans.html';
   });
 </script>
+
+
           
-        <button class="btn small main" id="addStation" title="view the plans for the website">Plans</button>
+
         <button class="btn small" id="exportBtn" title="Export stations JSON">Export</button>
         <button class="btn small" id="importBtn" title="Import stations JSON">Import</button>
       </div>
