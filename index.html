@@ -1053,42 +1053,42 @@ this.audio.autoplay = true;  // ✅ auto start once ready
   _stopUptime(){ clearInterval(this._uptimeTimer); this._uptimeTimer=null; setText(this.$uptime,'00:00'); }
 
   /* ---------- Warmup/Watchdog ---------- */
-_setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
-_inWarmup(){ return Date.now() < this._warmupUntil; }
+  _setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
+  _inWarmup(){ return Date.now() < this._warmupUntil; }
 
-_startWatchdog(){
-  this._stopWatchdog();
-  this._lastTimeUpdate = performance.now();
-  this._lastCt = this.audio?.currentTime || 0;
-  this._watchdogTimer = setInterval(()=>{
-    if (!this.audio || this.audio.paused) return;
-    if (this._inWarmup()) return;
-    if (this._inReconnect) return;
+  _startWatchdog(){
+    this._stopWatchdog();
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = this.audio?.currentTime || 0;
+    this._watchdogTimer = setInterval(()=>{
+      if (!this.audio || this.audio.paused) return;
+      if (this._inWarmup()) return;
+      if (this._inReconnect) return;
 
-    const now = performance.now();
-    const ct = this.audio.currentTime || 0;
-    const ctAdvanced = ct > this._lastCt + 0.1;
-    const rs = this.audio.readyState; // 0–4
-    const noProgressSecs = (now - this._lastTimeUpdate)/1000;
+      const now = performance.now();
+      const ct = this.audio.currentTime || 0;
+      const ctAdvanced = ct > this._lastCt + 0.1;
+      const rs = this.audio.readyState; // 0–4
+      const noProgressSecs = (now - this._lastTimeUpdate)/1000;
 
-    if (ctAdvanced || rs >= HTMLMediaElement.HAVE_FUTURE_DATA){
-      this._lastTimeUpdate = now; 
-      this._lastCt = ct; 
-      return;
-    }
+      if (ctAdvanced || rs >= HTMLMediaElement.HAVE_FUTURE_DATA){
+        this._lastTimeUpdate = now; this._lastCt = ct; return;
+      }
+      if (noProgressSecs >= this.watchdogSecs){
+        this.setErr('E006', `no progress ${Math.round(noProgressSecs)}s, rs=${rs}`);
+        this._scheduleReconnect();
+      }
+    }, 1000);
+  }
+  _stopWatchdog(){ if (this._watchdogTimer) clearInterval(this._watchdogTimer); this._watchdogTimer = null; }
 
-    if (noProgressSecs >= this.watchdogSecs){
-      this.setErr('E006', `no progress ${Math.round(noProgressSecs)}s, rs=${rs}`);
-      this._scheduleReconnect();
-    }
-  }, 1000);
-}
-
-_stopWatchdog(){ 
-  if (this._watchdogTimer) 
-    clearInterval(this._watchdogTimer); 
-  this._watchdogTimer = null; 
-}
+  /* ---------- Endpoint Rotation ---------- */
+  _currentUrl(){ return this.endpoints[this.endpointIndex] || this.station.src; }
+  _rotateEndpoint(){
+    this.endpointIndex = (this.endpointIndex + 1) % this.endpoints.length;
+    this._updateEndpointBadge();
+    this.log(`Rotated endpoint -> ${this._currentUrl()}`);
+  }
 
   /* ---------- Controls ---------- */
   async safePlay(){
