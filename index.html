@@ -1052,43 +1052,89 @@ this.audio.autoplay = true;  // ✅ auto start once ready
   }
   _stopUptime(){ clearInterval(this._uptimeTimer); this._uptimeTimer=null; setText(this.$uptime,'00:00'); }
 
-  /* ---------- Warmup/Watchdog ---------- */
-  _setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
-  _inWarmup(){ return Date.now() < this._warmupUntil; }
+  /* ---------- Warmup/Watchdog (Enhanced) ---------- */
+_setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
+_inWarmup(){ return Date.now() < this._warmupUntil; }
 
-  _startWatchdog(){
-    this._stopWatchdog();
-    this._lastTimeUpdate = performance.now();
-    this._lastCt = this.audio?.currentTime || 0;
-    this._watchdogTimer = setInterval(()=>{
-      if (!this.audio || this.audio.paused) return;
-      if (this._inWarmup()) return;
-      if (this._inReconnect) return;
+_startWatchdog(){
+  this._stopWatchdog();
+  this._lastTimeUpdate = performance.now();
+  this._lastCt = this.audio?.currentTime || 0;
+  this._healthHistory = [];
+  const card = this.mount;
+  card.style.outline = "2px solid transparent";
+  let pulse = false;
 
-      const now = performance.now();
-      const ct = this.audio.currentTime || 0;
-      const ctAdvanced = ct > this._lastCt + 0.1;
-      const rs = this.audio.readyState; // 0–4
-      const noProgressSecs = (now - this._lastTimeUpdate)/1000;
+  this._watchdogTimer = setInterval(()=>{
+    if (!this.audio || this.audio.paused) return;
+    if (this._inWarmup() || this._inReconnect) return;
 
-      if (ctAdvanced || rs >= HTMLMediaElement.HAVE_FUTURE_DATA){
-        this._lastTimeUpdate = now; this._lastCt = ct; return;
-      }
-      if (noProgressSecs >= this.watchdogSecs){
-        this.setErr('E006', `no progress ${Math.round(noProgressSecs)}s, rs=${rs}`);
-        this._scheduleReconnect();
-      }
-    }, 1000);
+    const now = performance.now();
+    const ct = this.audio.currentTime || 0;
+    const delta = ct - this._lastCt;
+    const rs = this.audio.readyState;
+    const noProgressSecs = (now - this._lastTimeUpdate) / 1000;
+
+    // Track metrics
+    const buffered = this.audio.buffered?.length ? 
+      this.audio.buffered.end(0) - this.audio.buffered.start(0) : 0;
+    const health = {
+      t: new Date().toLocaleTimeString(),
+      rs,
+      ct: ct.toFixed(1),
+      delta: delta.toFixed(2),
+      buf: buffered.toFixed(1)
+    };
+    this._healthHistory.push(health);
+    if (this._healthHistory.length > 20) this._healthHistory.shift();
+
+    // Pulse animation for visible feedback
+    pulse = !pulse;
+    card.style.outline = pulse ? "2px solid var(--accent)" : "2px solid transparent";
+
+    // Adaptive watchdog interval based on reliability
+    const avgDelta = this._healthHistory.reduce((a,b)=>a+parseFloat(b.delta),0)/this._healthHistory.length;
+    const dynamicLimit = avgDelta < 0.1 ? this.watchdogSecs : Math.max(6, this.watchdogSecs - 4);
+
+    // Decision logic
+    if (delta > 0.1 || rs >= HTMLMediaElement.HAVE_FUTURE_DATA){
+      this._lastTimeUpdate = now; this._lastCt = ct; return;
+    }
+
+    if (noProgressSecs >= dynamicLimit){
+      this.setErr('E006', `no progress ${Math.round(noProgressSecs)}s, rs=${rs}, buf=${buffered.toFixed(1)}s`);
+      // Light recovery first
+      this._lightRecovery().catch(()=> this._scheduleReconnect());
+    }
+  }, 1000);
+}
+
+async _lightRecovery(){
+  try {
+    if (!this.audio) return;
+    this.log("⚡ Light recovery attempt…");
+    const prevSrc = this.audio.currentSrc;
+    await this.audio.play().then(()=>{
+      this._setWarmup(4000);
+      this.setPill("Recovered","ok");
+      this.log("✅ Stream recovered without reconnect");
+    }).catch(()=>{
+      this.log("❌ Light recovery failed; scheduling reconnect");
+      this._scheduleReconnect();
+    });
+  } catch (err){
+    this.log("Light recovery exception: "+err.message);
+    this._scheduleReconnect();
   }
-  _stopWatchdog(){ if (this._watchdogTimer) clearInterval(this._watchdogTimer); this._watchdogTimer = null; }
+}
 
-  /* ---------- Endpoint Rotation ---------- */
-  _currentUrl(){ return this.endpoints[this.endpointIndex] || this.station.src; }
-  _rotateEndpoint(){
-    this.endpointIndex = (this.endpointIndex + 1) % this.endpoints.length;
-    this._updateEndpointBadge();
-    this.log(`Rotated endpoint -> ${this._currentUrl()}`);
+_stopWatchdog(){
+  if (this._watchdogTimer){
+    clearInterval(this._watchdogTimer);
+    this._watchdogTimer = null;
   }
+  if (this.mount) this.mount.style.outline = "2px solid transparent";
+}
 
   /* ---------- Controls ---------- */
   async safePlay(){
