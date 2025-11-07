@@ -968,47 +968,57 @@ this.audio.autoplay = true;  // ✅ auto start once ready
   }
   _stopEQ(){ if (this.eqRAF) cancelAnimationFrame(this.eqRAF); this.eqRAF=null; }
 
-  attachAudioEvents(){
-    const a = this.audio;
+attachAudioEvents(){
+  const a = this.audio;
 
-    a.addEventListener('play', ()=>{
-      this.setPill('Playing','ok');
-      this.$play.textContent = '⏸ Pause';
-      this.isUserPaused = false;
-      this._startWatchdog();
-      this._setWarmup(6000);
-      this._lastTimeUpdate = performance.now();
-      this._lastCt = a.currentTime || 0;
-      bindMini(this);
-      persistLast(this.station.id);
-      this._startUptime();
-      if ('mediaSession' in navigator){
-        navigator.mediaSession.metadata = new MediaMetadata({ title: this.station.name, artist: 'Live Radio', album: 'Stream', artwork: [] });
-        navigator.mediaSession.setActionHandler('play', ()=>this.safePlay());
-        navigator.mediaSession.setActionHandler('pause', ()=>this.pause());
-        navigator.mediaSession.setActionHandler('stop', ()=>this.stop());
-      }
-    });
+  a.addEventListener('play', ()=>{
+    this.setPill('Playing','ok');
+    this.$play.textContent = '⏸ Pause';
+    this.isUserPaused = false;
+    this._startWatchdog();
+    this._setWarmup(6000);
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = a.currentTime || 0;
+    bindMini(this);
+    persistLast(this.station.id);
+    this._startUptime();
+    if ('mediaSession' in navigator){
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: this.station.name,
+        artist: 'Live Radio',
+        album: 'Stream',
+        artwork: []
+      });
+      navigator.mediaSession.setActionHandler('play', ()=>this.safePlay());
+      navigator.mediaSession.setActionHandler('pause', ()=>this.pause());
+      navigator.mediaSession.setActionHandler('stop', ()=>this.stop());
+    }
+  });
 
-    a.addEventListener('pause', ()=>{
-      this.setPill('Paused','warn');
-      this.$play.textContent = '▶ Play';
-      this.isUserPaused = true;
-      this._clearReconnectTimeout();
-      this._stopWatchdog();
-      this._stopCountdown();
-      this._stopUptime();
-      this.log('Playback paused.');
-      // Attempt counter reset on user action
-      this.attempt = 0;
-    });
+  a.addEventListener('pause', ()=>{
+    this.setPill('Paused','warn');
+    this.$play.textContent = '▶ Play';
+    this.isUserPaused = true;
+    this._clearReconnectTimeout();
+    this._stopWatchdog();
+    this._stopCountdown();
+    this._stopUptime();
+    this.log('Playback paused.');
+    this.attempt = 0;
+  });
 
-    a.addEventListener('timeupdate', ()=>{
-      this._lastTimeUpdate = performance.now();
-      this._lastCt = a.currentTime || 0;
-    });
-    a.addEventListener('loadeddata', ()=>{ this._lastTimeUpdate = performance.now(); });
-    a.addEventListener('canplay', ()=>{ this._lastTimeUpdate = performance.now(); });
+  a.addEventListener('timeupdate', ()=>{
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = a.currentTime || 0;
+  });
+
+  a.addEventListener('loadeddata', ()=>{
+    this._lastTimeUpdate = performance.now();
+  });
+
+  a.addEventListener('canplay', ()=>{
+    this._lastTimeUpdate = performance.now();
+  });
 
   a.addEventListener('canplay', ()=>{
     this._lastTimeUpdate = performance.now();
@@ -1017,37 +1027,55 @@ this.audio.autoplay = true;  // ✅ auto start once ready
 
   // 🎵 Hook for Now Playing + Lyrics Integration
   a.addEventListener("loadedmetadata", () => {
-    if (a.currentSrc && a.currentSrc.includes("amperwave.net")) return; // skip hosts with no metadata
+    // optional filter — remove if you want all stations to attempt
+    // if (a.currentSrc && a.currentSrc.includes("amperwave.net")) return;
     try {
       const title = a.getAttribute("title") || this.station.name;
-      updateNowPlayingFromMetadata(title);
+      updateNowPlayingFromMetadata(title, this.station.id);
     } catch (err) {
       console.warn("Metadata parse failed:", err);
     }
   });
 
+  // 🕒 Fallback: poll every 15s for stations that don't fire metadata events
+  setInterval(() => {
+    try {
+      const meta = a.getAttribute("title") || this.station.name;
+      if (meta && meta !== this._lastMeta) {
+        this._lastMeta = meta;
+        updateNowPlayingFromMetadata(meta, this.station.id);
+      }
+    } catch (err) {
+      console.warn("Polling metadata failed", err);
+    }
+  }, 15000);
+
   a.addEventListener('ended', ()=>{
     this.log('ended signaled on live stream; watchdog will decide.');
   });
 
+  a.addEventListener('error', ()=>{
+    const err = a.error;
+    if (!err){
+      this.setErr('E010','unknown media error');
+      this._scheduleReconnect();
+      return;
+    }
+    const codeName = MediaErrCodes[err.code] || `CODE_${err.code}`;
+    switch(err.code){
+      case 1: this.setErr('E002'); break;
+      case 2: this.setErr('E003'); break;
+      case 3: this.setErr('E004'); break;
+      case 4: this.setErr('E005'); break;
+      default: this.setErr('E010', 'code='+codeName); break;
+    }
+    if (err.code===2 || err.code===4){
+      this.log('Hint: persistent issues may be CORS related. [E007]');
+    }
+    this._scheduleReconnect(true);
+  });
+}
 
-    a.addEventListener('error', ()=>{
-      const err = a.error;
-      if (!err){ this.setErr('E010','unknown media error'); this._scheduleReconnect(); return; }
-      const codeName = MediaErrCodes[err.code] || `CODE_${err.code}`;
-      switch(err.code){
-        case 1: this.setErr('E002'); break;
-        case 2: this.setErr('E003'); break;
-        case 3: this.setErr('E004'); break;
-        case 4: this.setErr('E005'); break;
-        default: this.setErr('E010', 'code='+codeName); break;
-      }
-      if (err.code===2 || err.code===4){
-        this.log('Hint: persistent issues may be CORS related. [E007]');
-      }
-      this._scheduleReconnect(true);
-    });
-  }
 
   /* ---------- Countdown / uptime ---------- */
   _startCountdown(totalMs, labelPrefix="Reconnecting in"){
