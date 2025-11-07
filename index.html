@@ -406,6 +406,32 @@ form.addEventListener('submit', async (e) => {
   <input type="file" id="importFile" accept="application/json" hidden />
 
 <script>
+
+
+    const CACHE_NAME = "fmradio-cache-v1";
+const OFFLINE_URL = "/offline.html";
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL]))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then((resp) => {
+        if (resp) return resp;
+        // default offline fallback
+        return caches.match(OFFLINE_URL);
+      });
+    })
+  );
+});
+
 /* =========================================================
    FM Radio Player (v2) — Patched Core
    - Fixes: lifecycle leaks, WebAudio disconnects,
@@ -1838,6 +1864,17 @@ if (window.location.pathname === "/terms") {
   // Option 2 (if you prefer redirect instead of embed)
   // window.location.href = "https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f";
 }
+
+
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+      .catch(err => console.warn('⚠️ Service Worker failed:', err));
+  });
+}
+</script>
 
 
 
