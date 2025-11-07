@@ -161,6 +161,19 @@ input[type="search"],input[type="text"],input[type="url"],select{
   .field-help{font-size:.8rem;color:var(--muted)}
 </style>
 </head>
+
+    <div id="nowPlayingCard" style="
+  position:fixed;bottom:80px;right:20px;background:var(--panel);
+  border:1px solid var(--border);border-radius:16px;padding:16px;
+  box-shadow:var(--shadow);max-width:320px;z-index:9999;
+  display:none;flex-direction:column;gap:8px;">
+  <img id="trackArt" src="" alt="Artwork" style="width:100%;border-radius:12px;display:none;">
+  <div id="trackTitle" style="font-weight:600;font-size:1.05rem;">—</div>
+  <div id="trackArtist" style="color:var(--muted);font-size:.9rem;">—</div>
+  <div id="trackLyrics" style="color:var(--muted);font-size:.85rem;max-height:120px;overflow:auto;white-space:pre-line;"></div>
+</div>
+
+    
 <body>
 
 <!-- Maintenance Notice Modal -->
@@ -997,16 +1010,26 @@ this.audio.autoplay = true;  // ✅ auto start once ready
     a.addEventListener('loadeddata', ()=>{ this._lastTimeUpdate = performance.now(); });
     a.addEventListener('canplay', ()=>{ this._lastTimeUpdate = performance.now(); });
 
-    a.addEventListener('canplay', ()=>{
-  this._lastTimeUpdate = performance.now();
-  this.audio.play().catch(()=>{}); // ✅ auto-resume once it’s ready
-});
+  a.addEventListener('canplay', ()=>{
+    this._lastTimeUpdate = performance.now();
+    this.audio.play().catch(()=>{}); // ✅ auto-resume once it’s ready
+  });
 
+  // 🎵 Hook for Now Playing + Lyrics Integration
+  a.addEventListener("loadedmetadata", () => {
+    if (a.currentSrc && a.currentSrc.includes("amperwave.net")) return; // skip hosts with no metadata
+    try {
+      const title = a.getAttribute("title") || this.station.name;
+      updateNowPlayingFromMetadata(title);
+    } catch (err) {
+      console.warn("Metadata parse failed:", err);
+    }
+  });
 
+  a.addEventListener('ended', ()=>{
+    this.log('ended signaled on live stream; watchdog will decide.');
+  });
 
-    a.addEventListener('ended', ()=>{
-      this.log('ended signaled on live stream; watchdog will decide.');
-    });
 
     a.addEventListener('error', ()=>{
       const err = a.error;
@@ -1842,6 +1865,69 @@ if (window.location.pathname === "/terms") {
   // Option 2 (if you prefer redirect instead of embed)
   // window.location.href = "https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f";
 }
+
+    /* ============================
+   🎶 Now Playing + Lyrics Integration
+============================ */
+const nowCard = document.getElementById("nowPlayingCard");
+const artImg = document.getElementById("trackArt");
+const tTitle = document.getElementById("trackTitle");
+const tArtist = document.getElementById("trackArtist");
+const tLyrics = document.getElementById("trackLyrics");
+
+// Replace with your Genius API access token
+const GENIUS_TOKEN = "YOUR_GENIUS_API_TOKEN";
+
+async function fetchTrackInfo(query) {
+  try {
+    // Query iTunes for artwork and metadata
+    const iTunesURL = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&entity=song`;
+    const res = await fetch(iTunesURL);
+    const data = await res.json();
+    const track = data.results?.[0];
+    if (track) {
+      artImg.src = track.artworkUrl100?.replace("100x100", "300x300") || "";
+      artImg.style.display = track.artworkUrl100 ? "block" : "none";
+      tTitle.textContent = track.trackName || query;
+      tArtist.textContent = track.artistName || "";
+      nowCard.style.display = "flex";
+      fetchLyrics(`${track.artistName} ${track.trackName}`);
+    } else {
+      nowCard.style.display = "none";
+    }
+  } catch (err) {
+    console.warn("Track info fetch failed", err);
+  }
+}
+
+async function fetchLyrics(query) {
+  try {
+    const apiUrl = `https://api.genius.com/search?q=${encodeURIComponent(query)}`;
+    const res = await fetch(apiUrl, { headers: { Authorization: `Bearer ${GENIUS_TOKEN}` } });
+    const data = await res.json();
+    const song = data.response.hits?.[0]?.result;
+    if (!song) return;
+    const lyricsUrl = song.url;
+    tLyrics.innerHTML = `Lyrics: <a href="${lyricsUrl}" target="_blank" style="color:var(--accent)">View on Genius</a>`;
+  } catch (e) {
+    console.warn("Lyrics fetch failed", e);
+  }
+}
+
+/* Hook into your RadioPlayer to update metadata */
+function updateNowPlayingFromMetadata(metaText) {
+  if (!metaText) return;
+  // Common format: "Artist - Title"
+  const parts = metaText.split(" - ");
+  const artist = parts[0]?.trim();
+  const title = parts.slice(1).join(" - ").trim();
+  if (artist && title) {
+    fetchTrackInfo(`${artist} ${title}`);
+  } else {
+    fetchTrackInfo(metaText);
+  }
+}
+
 
 
 if ('serviceWorker' in navigator) {
