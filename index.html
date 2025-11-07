@@ -1968,14 +1968,23 @@ const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 replace with yo
 async function recognizeFromStream(streamUrl) {
   if (!streamUrl) return;
 
-  const formData = new FormData();
-  formData.append("api_token", AUDD_API_KEY);
-  formData.append("url", streamUrl);
-  formData.append("method", "recognizeWithOffset"); // allows .m3u8 or AAC streams
-  formData.append("return", "apple_music,spotify,deezer"); // optional rich info
+  const params = new URLSearchParams({
+    api_token: AUDD_API_KEY,
+    url: streamUrl,                       // direct stream URL
+    method: "recognizeWithOffset",        // handles HLS/AAC
+    return: "apple_music,spotify,deezer"  // optional extras
+  });
 
   try {
-    const res = await fetch("https://api.audd.io/", { method: "POST", body: formData });
+    const res = await fetch("https://api.audd.io/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+      cache: "no-store",
+      redirect: "follow",
+      mode: "cors"
+    });
+
     const data = await res.json();
     console.log("AudD response:", data);
 
@@ -1984,7 +1993,7 @@ async function recognizeFromStream(streamUrl) {
       console.log(`🎵 Recognized: ${artist} — ${title}`);
       updateNowPlayingFromMetadata(`${artist} - ${title}`);
     } else {
-      console.log("🎧 No match yet — retrying soon.");
+      console.log("🎧 No match yet — retrying soon.", data?.error?.error_message || "");
     }
   } catch (err) {
     console.warn("⚠️ AudD recognition failed", err);
