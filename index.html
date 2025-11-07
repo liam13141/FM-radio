@@ -971,6 +971,65 @@ this.audio.autoplay = true;  // ✅ auto start once ready
 attachAudioEvents(){
   const a = this.audio;
 
+  // ✅ Known metadata feeds for your real stations
+  const STATION_METADATA_FEEDS = {
+    "big985": "https://api.tunein.com/profiles/s33965/nowPlaying",     // Big 98.5 FM
+    "classicrock965": "https://api.tunein.com/profiles/s32491/nowPlaying", // Classic Rock 96.5
+    "k953": "https://api.tunein.com/profiles/s34523/nowPlaying"        // K95 95.3 FM
+  };
+
+  // 🧹 Clean junk / call signs from metadata
+  const sanitizeTitle = (t)=>{
+    if(!t) return null;
+    t = t.replace(/\u0000/g,'').trim();
+    if(!t || t.length < 3) return null;
+    if(/ktil|wrxl|amperwave|big985|audacy|unknown|listen/i.test(t)) return null;
+    return t;
+  };
+
+  // 🕒 Periodic metadata polling (15s)
+  const pollMetadata = ()=>{
+    const feed = STATION_METADATA_FEEDS[this.station.id];
+    if(!feed) return; // Classic Rock 96.5 uses ICY, handled below
+
+    fetch(feed)
+      .then(r=>r.json())
+      .then(data=>{
+        const meta = sanitizeTitle(
+          data?.Header?.Title ||
+          data?.song ||
+          data?.title ||
+          data?.current_track ||
+          data?.NowPlaying ||
+          ""
+        );
+        if(meta && meta !== this._lastMeta){
+          this._lastMeta = meta;
+          updateNowPlayingFromMetadata(meta, this.station.id);
+        }
+      })
+      .catch(()=>{ /* ignore */ });
+  };
+  setInterval(pollMetadata,15000);
+
+  // 🎶 Metadata from stream (ICY/Shoutcast)
+  a.addEventListener("loadedmetadata", () => {
+    try {
+      const raw = a.getAttribute("title") || this.station.name;
+      const clean = sanitizeTitle(raw);
+      if(clean){
+        updateNowPlayingFromMetadata(clean, this.station.id);
+        this._lastMeta = clean;
+      } else {
+        // If junk like KTIL, trigger external feed instead
+        pollMetadata();
+      }
+    } catch(e){
+      console.warn("Metadata parse failed:", e);
+    }
+  });
+
+  // 🎧 Normal audio lifecycle handlers
   a.addEventListener('play', ()=>{
     this.setPill('Playing','ok');
     this.$play.textContent = '⏸ Pause';
@@ -982,17 +1041,6 @@ attachAudioEvents(){
     bindMini(this);
     persistLast(this.station.id);
     this._startUptime();
-    if ('mediaSession' in navigator){
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: this.station.name,
-        artist: 'Live Radio',
-        album: 'Stream',
-        artwork: []
-      });
-      navigator.mediaSession.setActionHandler('play', ()=>this.safePlay());
-      navigator.mediaSession.setActionHandler('pause', ()=>this.pause());
-      navigator.mediaSession.setActionHandler('stop', ()=>this.stop());
-    }
   });
 
   a.addEventListener('pause', ()=>{
@@ -1003,7 +1051,6 @@ attachAudioEvents(){
     this._stopWatchdog();
     this._stopCountdown();
     this._stopUptime();
-    this.log('Playback paused.');
     this.attempt = 0;
   });
 
@@ -1012,69 +1059,15 @@ attachAudioEvents(){
     this._lastCt = a.currentTime || 0;
   });
 
-  a.addEventListener('loadeddata', ()=>{
-    this._lastTimeUpdate = performance.now();
-  });
-
   a.addEventListener('canplay', ()=>{
     this._lastTimeUpdate = performance.now();
+    this.audio.play().catch(()=>{});
   });
 
-  a.addEventListener('canplay', ()=>{
-    this._lastTimeUpdate = performance.now();
-    this.audio.play().catch(()=>{}); // ✅ auto-resume once it’s ready
-  });
-
-  // 🎵 Hook for Now Playing + Lyrics Integration
-  a.addEventListener("loadedmetadata", () => {
-    // optional filter — remove if you want all stations to attempt
-    // if (a.currentSrc && a.currentSrc.includes("amperwave.net")) return;
-    try {
-      const title = a.getAttribute("title") || this.station.name;
-      updateNowPlayingFromMetadata(title, this.station.id);
-    } catch (err) {
-      console.warn("Metadata parse failed:", err);
-    }
-  });
-
-  // 🕒 Fallback: poll every 15s for stations that don't fire metadata events
-  setInterval(() => {
-    try {
-      const meta = a.getAttribute("title") || this.station.name;
-      if (meta && meta !== this._lastMeta) {
-        this._lastMeta = meta;
-        updateNowPlayingFromMetadata(meta, this.station.id);
-      }
-    } catch (err) {
-      console.warn("Polling metadata failed", err);
-    }
-  }, 15000);
-
-  a.addEventListener('ended', ()=>{
-    this.log('ended signaled on live stream; watchdog will decide.');
-  });
-
-  a.addEventListener('error', ()=>{
-    const err = a.error;
-    if (!err){
-      this.setErr('E010','unknown media error');
-      this._scheduleReconnect();
-      return;
-    }
-    const codeName = MediaErrCodes[err.code] || `CODE_${err.code}`;
-    switch(err.code){
-      case 1: this.setErr('E002'); break;
-      case 2: this.setErr('E003'); break;
-      case 3: this.setErr('E004'); break;
-      case 4: this.setErr('E005'); break;
-      default: this.setErr('E010', 'code='+codeName); break;
-    }
-    if (err.code===2 || err.code===4){
-      this.log('Hint: persistent issues may be CORS related. [E007]');
-    }
-    this._scheduleReconnect(true);
-  });
+  a.addEventListener('ended', ()=> this.log('ended signaled on live stream; watchdog will decide.'));
+  a.addEventListener('error', ()=> this._scheduleReconnect(true));
 }
+
 
 
   /* ---------- Countdown / uptime ---------- */
