@@ -408,29 +408,7 @@ form.addEventListener('submit', async (e) => {
 <script>
 
 
-    const CACHE_NAME = "fmradio-cache-v1";
-const OFFLINE_URL = "/offline.html";
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL]))
-  );
-  self.skipWaiting();
-});
-
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request).then((resp) => {
-        if (resp) return resp;
-        // default offline fallback
-        return caches.match(OFFLINE_URL);
-      });
-    })
-  );
-});
 
 /* =========================================================
    FM Radio Player (v2) — Patched Core
