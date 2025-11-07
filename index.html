@@ -1962,37 +1962,42 @@ if ('serviceWorker' in navigator) {
 }
 
 /* === AudD Live Stream Recognition (CORS-safe) === */
-const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 Replace this
+/* === AudD Live Stream Recognition (Full + HLS/AAC Support) === */
+const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 replace with your real token
 
 async function recognizeFromStream(streamUrl) {
+  if (!streamUrl) return;
+
   const formData = new FormData();
   formData.append("api_token", AUDD_API_KEY);
-  formData.append("url", streamUrl); // Let AudD fetch directly
+  formData.append("url", streamUrl);
+  formData.append("method", "recognizeWithOffset"); // allows .m3u8 or AAC streams
+  formData.append("return", "apple_music,spotify,deezer"); // optional rich info
 
   try {
     const res = await fetch("https://api.audd.io/", { method: "POST", body: formData });
     const data = await res.json();
+    console.log("AudD response:", data);
 
     if (data.status === "success" && data.result) {
       const { artist, title } = data.result;
       console.log(`🎵 Recognized: ${artist} — ${title}`);
       updateNowPlayingFromMetadata(`${artist} - ${title}`);
     } else {
-      console.log("❌ No song detected yet.");
+      console.log("🎧 No match yet — retrying soon.");
     }
   } catch (err) {
     console.warn("⚠️ AudD recognition failed", err);
   }
 }
 
-/* === Integrate with RadioPlayer === */
 function enableAudDRecognition(player) {
-  if (!player.station.src) return;
+  if (!player.station || !player.station.src) return;
   if (player._audDInterval) clearInterval(player._audDInterval);
 
   player._audDInterval = setInterval(() => {
     recognizeFromStream(player.station.src);
-  }, 10000); // every 60s
+  }, 60000); // every 60s
 }
 
 function disableAudDRecognition(player) {
@@ -2001,6 +2006,7 @@ function disableAudDRecognition(player) {
     player._audDInterval = null;
   }
 }
+
 
 
 </script>
