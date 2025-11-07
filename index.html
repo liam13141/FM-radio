@@ -1965,40 +1965,60 @@ if ('serviceWorker' in navigator) {
 /* === AudD Live Stream Recognition (Full + HLS/AAC Support) === */
 const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 replace with your real token
 
-async function recognizeFromStream(streamUrl) {
-  if (!streamUrl) return;
-
-  const params = new URLSearchParams({
-    api_token: AUDD_API_KEY,
-    url: streamUrl,                       // direct stream URL
-    method: "recognizeWithOffset",        // handles HLS/AAC
-    return: "apple_music,spotify,deezer"  // optional extras
-  });
+async function recognizeFromStream(player) {
+  if (!player.audio || player.audio.paused) return;
 
   try {
-    const res = await fetch("https://api.audd.io/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-      cache: "no-store",
-      redirect: "follow",
-      mode: "cors"
-    });
+    // 1️⃣ Capture 7 seconds from the playing audio
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = ctx.createMediaStreamDestination();
+    const src = ctx.createMediaElementSource(player.audio);
+    src.connect(dest);
+    src.connect(ctx.destination);
 
-    const data = await res.json();
-    console.log("AudD response:", data);
+    const rec = new MediaRecorder(dest.stream);
+    const chunks = [];
 
-    if (data.status === "success" && data.result) {
-      const { artist, title } = data.result;
-      console.log(`🎵 Recognized: ${artist} — ${title}`);
-      updateNowPlayingFromMetadata(`${artist} - ${title}`);
-    } else {
-      console.log("🎧 No match yet — retrying soon.", data?.error?.error_message || "");
-    }
-  } catch (err) {
-    console.warn("⚠️ AudD recognition failed", err);
+    rec.ondataavailable = e => chunks.push(e.data);
+
+    rec.onstop = async () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const form = new FormData();
+      form.append("api_token", AUDD_API_KEY);
+      form.append("file", blob, "sample.webm");
+      form.append("return", "apple_music,spotify,deezer");
+
+      const res = await fetch("https://api.audd.io/", { method: "POST", body: form });
+      const data = await res.json();
+      console.log("AudD result:", data);
+
+      if (data.status === "success" && data.result) {
+        const { artist, title } = data.result;
+        updateNowPlayingFromMetadata(`${artist} - ${title}`);
+      } else {
+        console.log("🎧 No match:", data.error?.error_message || "none");
+      }
+    };
+
+    rec.start();
+    setTimeout(() => rec.stop(), 7000); // record for 7 seconds
+  } catch (e) {
+    console.warn("Recognition failed:", e);
   }
 }
+
+function enableAudDRecognition(player) {
+  if (player._audDInterval) clearInterval(player._audDInterval);
+  player._audDInterval = setInterval(() => recognizeFromStream(player), 60000);
+}
+
+function disableAudDRecognition(player) {
+  if (player._audDInterval) {
+    clearInterval(player._audDInterval);
+    player._audDInterval = null;
+  }
+}
+
 
 function enableAudDRecognition(player) {
   if (!player.station || !player.station.src) return;
@@ -2006,7 +2026,7 @@ function enableAudDRecognition(player) {
 
   player._audDInterval = setInterval(() => {
     recognizeFromStream(player.station.src);
-  }, 60000); // every 60s
+  }, 10000); // every 60s
 }
 
 function disableAudDRecognition(player) {
