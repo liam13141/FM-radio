@@ -1961,64 +1961,38 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-<!-- === AudD Live Song Recognition === -->
-/* === AudD Live Song Recognition === */
-const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 👈 replace with your key
+/* === AudD Live Stream Recognition (CORS-safe) === */
+const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 Replace this
 
-async function captureAudioSample(audioEl, durationMs = 7000) {
-  const ctx = new AudioContext();
-  const src = ctx.createMediaElementSource(audioEl);
-  const dest = ctx.createMediaStreamDestination();
-  src.connect(dest);
-  src.connect(ctx.destination);
-
-  const recorder = new MediaRecorder(dest.stream);
-  const chunks = [];
-
-  return new Promise(resolve => {
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => {
-      ctx.close();
-      resolve(new Blob(chunks, { type: "audio/webm" }));
-    };
-    recorder.start();
-    setTimeout(() => recorder.stop(), durationMs);
-  });
-}
-
-async function identifyTrack(blob) {
+async function recognizeFromStream(streamUrl) {
   const formData = new FormData();
-  formData.append("file", blob);
   formData.append("api_token", AUDD_API_KEY);
+  formData.append("url", streamUrl); // Let AudD fetch directly
 
   try {
     const res = await fetch("https://api.audd.io/", { method: "POST", body: formData });
     const data = await res.json();
 
     if (data.status === "success" && data.result) {
-      const { artist, title, album } = data.result;
+      const { artist, title } = data.result;
       console.log(`🎵 Recognized: ${artist} — ${title}`);
       updateNowPlayingFromMetadata(`${artist} - ${title}`);
     } else {
-      console.log("No song detected yet.");
+      console.log("❌ No song detected yet.");
     }
   } catch (err) {
-    console.warn("AudD recognition failed", err);
+    console.warn("⚠️ AudD recognition failed", err);
   }
 }
 
+/* === Integrate with RadioPlayer === */
 function enableAudDRecognition(player) {
-  if (!player.audio) return;
+  if (!player.station.src) return;
   if (player._audDInterval) clearInterval(player._audDInterval);
 
-  player._audDInterval = setInterval(async () => {
-    try {
-      const blob = await captureAudioSample(player.audio);
-      await identifyTrack(blob);
-    } catch (err) {
-      console.warn("Audio capture error", err);
-    }
-  }, 60000);
+  player._audDInterval = setInterval(() => {
+    recognizeFromStream(player.station.src);
+  }, 10000); // every 60s
 }
 
 function disableAudDRecognition(player) {
@@ -2027,6 +2001,7 @@ function disableAudDRecognition(player) {
     player._audDInterval = null;
   }
 }
+
 
 </script>
 </body>
