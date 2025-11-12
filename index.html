@@ -1924,6 +1924,48 @@ signupBtn.addEventListener("click", async () => {
 });
 
 
+function showBanOverlay() {
+  const overlay = document.createElement("div");
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(6px);
+    z-index:999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+    font-family:'Poppins',sans-serif;
+  `;
+  overlay.innerHTML = `
+    <div style="max-width:480px;padding:30px;background:#17191e;border:1px solid #333;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+      <h2 style="color:#ff5577;margin-bottom:12px;">🚫 You are banned</h2>
+      <p style="color:#ccc;margin-bottom:10px;">If you think this was a mistake, email:</p>
+      <p><a href="mailto:rdsknsfan@gmail.com" style="color:#00c6ff;text-decoration:none;">rdsknsfan@gmail.com</a></p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// Modify login handling:
+
+
+    if (data.banned) {
+      showBanOverlay();
+      loginStatus.textContent = "⛔ You are banned.";
+      return;
+    }
+
+    loginStatus.textContent = data.message;
+    localStorage.setItem("fm_user", data.user);
+    loginDialog.close();
+    toast(`👋 Welcome ${data.user}`);
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
 
 
 </script>
