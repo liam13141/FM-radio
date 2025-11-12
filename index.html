@@ -1872,10 +1872,8 @@ function disableAudDRecognition(player) {
   }
 }
 
-    // ==========================
-// Login / Signup API calls
-// ==========================
-const API_BASE = "http://127.0.0.1:8080"; // change if hosted
+
+const API_BASE = "https://login-api-iwy1.onrender.com"; // change to your domain when hosted
 
 const loginDialog = document.getElementById("loginDialog");
 const openLogin = document.getElementById("openLogin");
@@ -1884,46 +1882,89 @@ const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 const loginStatus = document.getElementById("loginStatus");
 
-openLogin.addEventListener("click", () => loginDialog.showModal());
+const USER_KEY = "fm_user";
+const overlayId = "auth-lock-overlay";
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData(loginForm);
-  loginStatus.textContent = "Logging in...";
-  try {
-    const res = await fetch(`${API_BASE}/login`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Login failed");
-    loginStatus.textContent = data.message;
-    localStorage.setItem("fm_user", data.user);
-    loginDialog.close();
-    toast(`👋 Welcome ${data.user}`);
-  } catch (err) {
-    loginStatus.textContent = err.message;
+// ==========================
+// 🔒 Require Login Overlay
+// ==========================
+function createAuthOverlay() {
+  if (document.getElementById(overlayId)) return;
+  const overlay = document.createElement("div");
+  overlay.id = overlayId;
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    backdrop-filter:blur(8px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-family:'Poppins',sans-serif;
+    z-index:999999;
+    text-align:center;
+  `;
+  overlay.innerHTML = `
+    <h2 style="margin-bottom:10px;">🔐 Please log in to access FM Radio Player</h2>
+    <button id="unlockLoginBtn" class="btn main" style="padding:10px 20px;">Login</button>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById("unlockLoginBtn").addEventListener("click", () => {
+    loginDialog.showModal();
+  });
+}
+
+function removeAuthOverlay() {
+  const el = document.getElementById(overlayId);
+  if (el) el.remove();
+}
+
+function checkLoginStatus() {
+  const user = localStorage.getItem(USER_KEY);
+  if (!user) {
+    createAuthOverlay();
+    grid.style.display = "none";
+    mini.style.display = "none";
+    return false;
   }
+  removeAuthOverlay();
+  grid.style.display = "";
+  mini.style.display = "";
+  addLogoutButton();
+  return true;
+}
+
+function addLogoutButton() {
+  if (document.getElementById("logoutBtn")) return;
+  const btn = document.createElement("button");
+  btn.className = "btn small";
+  btn.id = "logoutBtn";
+  btn.textContent = "🚪 Logout";
+  btn.title = "Log out";
+  btn.addEventListener("click", () => {
+    localStorage.removeItem(USER_KEY);
+    toast("You have logged out.");
+    createAuthOverlay();
+    grid.style.display = "none";
+    mini.style.display = "none";
+  });
+  document.querySelector(".toolbar").appendChild(btn);
+}
+
+// Run check on load
+// Always show login overlay immediately, even if logged in earlier
+window.addEventListener("DOMContentLoaded", () => {
+  createAuthOverlay();         // show "You must log in" screen first
+  loginDialog.showModal();     // auto-open the login modal
+  grid.style.display = "none";
+  mini.style.display = "none";
 });
 
-signupBtn.addEventListener("click", async () => {
-  const formData = new FormData(loginForm);
-  loginStatus.textContent = "Creating account...";
-  try {
-    const res = await fetch(`${API_BASE}/signup`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Signup failed");
-    loginStatus.textContent = data.message;
-    toast("✅ Account created!");
-  } catch (err) {
-    loginStatus.textContent = err.message;
-  }
-});
-
-
+// ==========================
+// Helper: show ban overlay
+// ==========================
 function showBanOverlay() {
   const overlay = document.createElement("div");
   overlay.style = `
@@ -1949,8 +1990,21 @@ function showBanOverlay() {
   document.body.appendChild(overlay);
 }
 
-// Modify login handling:
+// ==========================
+// Handle login submit
+// ==========================
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Logging in...";
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
 
+    if (!res.ok) throw new Error(data.detail || "Login failed");
 
     if (data.banned) {
       showBanOverlay();
@@ -1958,16 +2012,44 @@ function showBanOverlay() {
       return;
     }
 
+    // ✅ Successful login
     loginStatus.textContent = data.message;
-    localStorage.setItem("fm_user", data.user);
+    localStorage.setItem(USER_KEY, data.user);
     loginDialog.close();
     toast(`👋 Welcome ${data.user}`);
+    removeAuthOverlay();
+    grid.style.display = "";
+    mini.style.display = "";
+    addLogoutButton();
   } catch (err) {
     loginStatus.textContent = err.message;
   }
 });
 
+// ==========================
+// Handle signup
+// ==========================
+signupBtn.addEventListener("click", async () => {
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Creating account...";
+  try {
+    const res = await fetch(`${API_BASE}/signup`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Signup failed");
+    loginStatus.textContent = data.message;
+    toast("✅ Account created!");
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
+
+// open login dialog manually
+openLogin.addEventListener("click", () => loginDialog.showModal());
 
 </script>
+
 </body>
 </html>
