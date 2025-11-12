@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WeatherStyle Pro Ultra++ 🌦️</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#89f7fe;--bg2:#66a6ff;--dark1:#0f172a;--dark2:#1e293b;
+  --accent:#0284c7;--blur:18px;
+}
+body{
+  margin:0;font-family:'Poppins',sans-serif;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:40px;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  transition:background 1s ease,color .6s;overflow-x:hidden;color:#0f172a;
+}
+.dark{background:linear-gradient(135deg,var(--dark1),var(--dark2));color:#f1f5f9;}
+h1{font-size:2.8em;margin:10px;text-align:center;animation:float 3s infinite alternate;}
+@keyframes float{to{transform:translateY(-8px)}}
+.search-box{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:15px 0;}
+input,select{
+  padding:12px 16px;border:none;border-radius:12px;
+  backdrop-filter:blur(var(--blur));background:rgba(255,255,255,.25);
+  color:inherit;min-width:230px;font-size:1em;outline:none;
+}
+button{
+  padding:12px 18px;border:none;border-radius:12px;
+  background:var(--accent);color:#fff;font-weight:600;
+  cursor:pointer;transition:.3s;box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+button:hover{transform:scale(1.07) rotate(-2deg);background:#0369a1;}
+.card{
+  background:rgba(255,255,255,.25);backdrop-filter:blur(var(--blur));
+  border-radius:24px;padding:30px;text-align:center;max-width:480px;width:100%;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);transition:transform .3s;
+}
+.card:hover{transform:scale(1.03);}
+.emoji{font-size:3em;margin-bottom:10px;animation:pulse 2s infinite alternate;}
+@keyframes pulse{to{transform:scale(1.15)}}
+.temp{font-size:2.3em;color:var(--accent);}
+.forecast{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:25px;}
+.day{
+  background:rgba(255,255,255,.2);border-radius:16px;padding:12px;width:90px;text-align:center;
+  transition:.2s;box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+.day:hover{transform:scale(1.1);}
+.day-name{font-weight:600;}
+.icon{font-size:1.5em;}
+.temps{color:var(--accent);font-weight:600;}
+footer{margin-top:40px;font-size:.9em;opacity:.8;}
+/* Settings Drawer */
+#settingsDrawer{
+  position:fixed;top:0;right:-320px;width:300px;height:100%;
+  background:rgba(255,255,255,.2);backdrop-filter:blur(25px);
+  box-shadow:-4px 0 30px rgba(0,0,0,.3);transition:right .5s;padding:20px;
+  color:inherit;z-index:999;
+}
+#settingsDrawer.open{right:0;}
+#settingsDrawer h2{text-align:center;margin-top:10px;}
+.setting-row{margin:15px 0;display:flex;justify-content:space-between;align-items:center;}
+#gear{position:fixed;bottom:30px;right:30px;width:55px;height:55px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.25);backdrop-filter:blur(8px);
+  cursor:pointer;font-size:1.5em;transition:.4s;}
+#gear:hover{transform:rotate(90deg) scale(1.2);}
+.status{position:fixed;top:15px;left:15px;font-size:.9em;opacity:.8;}
+canvas#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;}
+.modal-content{background:#fff;color:#000;padding:20px;border-radius:12px;max-width:400px;text-align:center;}
+.modal iframe{width:100%;height:215px;border:none;border-radius:8px;}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="status" id="status">🛰️ Connecting...</div>
+<h1>🌦️ WeatherStyle Pro Ultra++</h1>
+
+<div class="search-box">
+  <input id="cityInput" type="text" placeholder="Enter city (e.g. Chesterfield, VA)">
+  <button onclick="fetchWeather()">Get Weather</button>
+</div>
+<div id="output"></div>
+
+<div id="gear" onclick="toggleDrawer()">⚙️</div>
+<div id="settingsDrawer">
+  <h2>Settings</h2>
+  <div class="setting-row"><span>Dark Mode</span><input type="checkbox" id="darkToggle"></div>
+  <div class="setting-row"><span>°F Units</span><input type="checkbox" id="unitToggle"></div>
+  <div class="setting-row"><span>Accent Color</span>
+    <select id="colorSelect">
+      <option value="#0284c7">Blue</option>
+      <option value="#e11d48">Pink</option>
+      <option value="#22c55e">Green</option>
+      <option value="#f59e0b">Gold</option>
+    </select>
+  </div>
+  <div class="setting-row"><span>Particles</span><input type="checkbox" id="particleToggle" checked></div>
+  <div class="setting-row"><button onclick="showTroll()">🎵 Secret Mode</button></div>
+</div>
+
+<div class="modal" id="rickroll">
+  <div class="modal-content">
+    <h3>🎶 Surprise Playlist!</h3>
+    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"></iframe>
+    <button onclick="closeTroll()">Close</button>
+  </div>
+</div>
+
+<footer>© 2025 WeatherStyle Pro Ultra++ | Coded with ☕ + ⚡</footer>
+
+<script>
+const AUTH="10292051924712",API="http://127.0.0.1:8000/weather?city=";
+const statusEl=document.getElementById("status");
+const drawer=document.getElementById("settingsDrawer");
+const particles=document.getElementById("particles");const ctx=particles.getContext("2d");
+let partArray=[],weatherType="Clear",lastData=null;
+
+function toggleDrawer(){drawer.classList.toggle("open");}
+function showTroll(){document.getElementById("rickroll").style.display="flex";}
+function closeTroll(){document.getElementById("rickroll").style.display="none";}
+
+function init(){
+  if(localStorage.theme==="dark")document.body.classList.add("dark");
+  if(localStorage.color)document.documentElement.style.setProperty("--accent",localStorage.color);
+  document.getElementById("darkToggle").checked=document.body.classList.contains("dark");
+  document.getElementById("colorSelect").value=localStorage.color||"#0284c7";
+
+  document.getElementById("darkToggle").onchange=e=>{
+    document.body.classList.toggle("dark",e.target.checked);
+    localStorage.theme=e.target.checked?"dark":"light";
+  };
+  document.getElementById("colorSelect").onchange=e=>{
+    document.documentElement.style.setProperty("--accent",e.target.value);
+    localStorage.color=e.target.value;
+  };
+  document.getElementById("unitToggle").onchange=()=>renderWeather(lastData);
+  document.getElementById("particleToggle").onchange=e=>{
+    if(!e.target.checked)partArray=[];else makeParticles();
+  };
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>fetchWeather(`${p.coords.latitude},${p.coords.longitude}`),
+      ()=>fetchWeather());
+  } else fetchWeather();
+  animate();
+}
+async function fetchWeather(cityInput){
+  const city=cityInput||document.getElementById("cityInput").value||"Chesterfield,VA";
+  const out=document.getElementById("output");
+  out.innerHTML=`<div class="loading">⏳ Loading ${city}...</div>`;
+  try{
+    const res=await fetch(`${API}${encodeURIComponent(city)}&authorization=${AUTH}`);
+    const data=await res.json();
+    lastData=data;
+    statusEl.textContent="✅ Connected";
+    renderWeather(data);
+  }catch(e){
+    statusEl.textContent="❌ Offline";
+    out.innerHTML=`<p style="color:red;">Error fetching weather.</p>`;
+  }
+}
+function cToF(c){return (c*9/5)+32;}
+function renderWeather(data){
+  const out=document.getElementById("output");
+  if(!data||data.message==="🚫 Not Authorized"){out.innerHTML=`<div class="card"><h2>Access Restricted</h2></div>`;return;}
+  weatherType=data.main||"Clear";makeParticles();
+  const useF=document.getElementById("unitToggle").checked;
+  const temp=useF?`${cToF(data.temp_c).toFixed(1)}°F`:`${data.temp_c.toFixed(1)}°C`;
+  const forecastHTML=Object.entries(data.forecast||{}).slice(0,5).map(([d,i])=>{
+    const min=useF?cToF(i.min).toFixed(0):i.min.toFixed(0);
+    const max=useF?cToF(i.max).toFixed(0):i.max.toFixed(0);
+    return `<div class="day"><div class="day-name">${d}</div><div class="icon">${emojiFor(i.main)}</div><div class="temps">${max}° / ${min}°</div></div>`;
+  }).join("");
+  out.innerHTML=`
+    <div class="card">
+      <div class="emoji">${emojiFor(data.main)}</div>
+      <h2>${data.city}</h2>
+      <div class="temp">${temp}</div>
+      <div>${data.desc}</div>
+      <div class="clothing">${data.clothing_tip}</div>
+    </div>
+    <div class="forecast">${forecastHTML}</div>`;
+}
+function emojiFor(c){const m={Clear:"☀️",Clouds:"☁️",Rain:"🌧️",Drizzle:"🌦️",Thunderstorm:"⛈️",Snow:"❄️",Mist:"🌫️",Fog:"🌫️",Haze:"🌫️"};return m[c]||"🌍";}
+function makeParticles(){
+  partArray=[];
+  for(let i=0;i<60;i++){partArray.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2+1,vy:Math.random()*2+1});}
+}
+function animate(){
+  ctx.clearRect(0,0,particles.width=innerWidth,particles.height=innerHeight);
+  ctx.fillStyle="rgba(255,255,255,.8)";
+  partArray.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI*2);ctx.fill();
+    p.y+=(weatherType.includes("Rain")?p.vy*2:weatherType.includes("Snow")?p.vy*.5:p.vy);
+    if(p.y>innerHeight)p.y=0;
+  });
+  requestAnimationFrame(animate);
+}
+window.onload=init;
+</script>
+</body>
+</html>
