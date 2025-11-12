@@ -167,6 +167,25 @@ input[type="search"],input[type="text"],input[type="url"],select{
     
 <body>
 
+    <!-- Login Modal -->
+<dialog id="loginDialog">
+  <form id="loginForm" method="dialog">
+    <h3>Login to FM Radio Player</h3>
+    <input id="username" name="username" placeholder="Username" required>
+    <input id="password" name="password" type="password" placeholder="Password" required>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn main" id="loginBtn" type="submit">Login</button>
+      <button class="btn" id="signupBtn" type="button">Sign Up</button>
+      <button class="btn danger" type="button" onclick="loginDialog.close()">Cancel</button>
+    </div>
+    <p id="loginStatus" style="margin-top:8px;color:var(--muted)"></p>
+  </form>
+</dialog>
+
+<!-- Add Login button to your toolbar -->
+<button class="btn small main" id="openLogin">👤 Login</button>
+
+
 <!-- Maintenance Notice Modal -->
 <div id="staffNotice" role="dialog" aria-labelledby="staffTitle" aria-modal="true"
      style="position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);z-index:99999;">
@@ -1852,6 +1871,58 @@ function disableAudDRecognition(player) {
     player._audDInterval = null;
   }
 }
+
+    // ==========================
+// Login / Signup API calls
+// ==========================
+const API_BASE = "http://127.0.0.1:8080"; // change if hosted
+
+const loginDialog = document.getElementById("loginDialog");
+const openLogin = document.getElementById("openLogin");
+const loginForm = document.getElementById("loginForm");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const loginStatus = document.getElementById("loginStatus");
+
+openLogin.addEventListener("click", () => loginDialog.showModal());
+
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Logging in...";
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Login failed");
+    loginStatus.textContent = data.message;
+    localStorage.setItem("fm_user", data.user);
+    loginDialog.close();
+    toast(`👋 Welcome ${data.user}`);
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
+
+signupBtn.addEventListener("click", async () => {
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Creating account...";
+  try {
+    const res = await fetch(`${API_BASE}/signup`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Signup failed");
+    loginStatus.textContent = data.message;
+    toast("✅ Account created!");
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
+
 
 
 
