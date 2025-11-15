@@ -174,11 +174,6 @@ input[type="search"],input[type="text"],input[type="url"],select{
     <input id="username" name="username" placeholder="Username" required>
     <input id="password" name="password" type="password" placeholder="Password" required>
     <div style="display:flex;gap:8px;margin-top:12px;">
-        <div id="loginError" 
-     style="display:none; background:#2a0f12; color:#ff6b81; padding:10px;
-            border-radius:8px; font-size:.9rem; border:1px solid #7d2323;">
-</div>
-
       <button class="btn main" id="loginBtn" type="submit">Login</button>
       <button class="btn" id="signupBtn" type="button">Sign Up</button>
       <button class="btn danger" type="button" onclick="loginDialog.close()">Cancel</button>
@@ -1995,51 +1990,41 @@ function showBanOverlay() {
   document.body.appendChild(overlay);
 }
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// ==========================
+// Handle login submit
+// ==========================
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Logging in...";
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
 
-    const u = username.value.trim();
-    const p = password.value.trim();
-    const box = document.getElementById("loginError");
+    if (!res.ok) throw new Error(data.detail || "Login failed");
 
-    // Clear old error
-    box.style.display = "none";
-    box.textContent = "";
-
-    const formData = new URLSearchParams();
-    formData.append("username", u);
-    formData.append("password", p);
-
-    try {
-      const res = await fetch("https://login-api-iwy1.onrender.com/login", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        const code = data.error?.code || "??";
-        const msg = data.error?.message || "Unknown error";
-
-        box.style.display = "block";
-        box.textContent = `❌ Error ${code}: ${msg}`;
-        return;
-      }
-
-      // SUCCESS
-      setCookie("fmUser", u, 7);
-      loginBox.style.display = "none";
-      toast(`Logged in as ${u}`);
-
-    } catch (err) {
-      box.style.display = "block";
-      box.textContent = "❌ Error X1: Could not connect to login server.";
+    if (data.banned) {
+      showBanOverlay();
+      loginStatus.textContent = "⛔ You are banned.";
+      return;
     }
-  });
-}
 
+    // ✅ Successful login
+    loginStatus.textContent = data.message;
+    localStorage.setItem(USER_KEY, data.user);
+    loginDialog.close();
+    toast(`👋 Welcome ${data.user}`);
+    removeAuthOverlay();
+    grid.style.display = "";
+    mini.style.display = "";
+    addLogoutButton();
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
 
 // ==========================
 // Handle signup
