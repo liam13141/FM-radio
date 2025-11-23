@@ -11,6 +11,61 @@
 <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
 <style>
 
+/* ===========================
+   📱 Mobile Warning Popup
+=========================== */
+.mobile-warning {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 99999;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.mw-box {
+  background: #181a1f;
+  color: #fff;
+  width: 90%;
+  max-width: 380px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid #3a3f47;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.mw-box h2 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.mw-box p {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-bottom: 18px;
+}
+
+.mw-btn {
+  background: #d62828;
+  border: none;
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+
+.mw-btn:hover {
+  background: #b71d1d;
+}
+
+
   .xmas-fall {
   position: fixed;
   top: -40px;
@@ -468,6 +523,27 @@ body::after {
 
 
 
+<div id="mobileWarning" class="mobile-warning">
+  <div class="mw-box">
+    <h2>⚠ Desktop Recommended</h2>
+    <p>This website is designed for desktop. Some features may not work as expected on mobile.</p>
+    <button id="mobileContinue" class="mw-btn">Use Anyway</button>
+  </div>
+</div>
+
+<script>
+  // Detect if mobile
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    document.getElementById("mobileWarning").style.display = "flex";
+  }
+
+  // Hide popup on button press
+  document.getElementById("mobileContinue").addEventListener("click", () => {
+    document.getElementById("mobileWarning").style.display = "none";
+  });
+</script>
 
 
 
