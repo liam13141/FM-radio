@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790408110014858"
+     crossorigin="anonymous"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FM Radio Player — MoonLitGames</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+  .xmas-fall {
+  position: fixed;
+  top: -40px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.xmas-icon {
+  position: absolute;
+  font-size: 22px;
+  opacity: 0.6;
+  animation: xmasDrop 14s linear infinite;
+}
+
+@keyframes xmasDrop {
+  0% { transform: translateY(-40px); }
+  100% { transform: translateY(110vh); }
+}
+
+
+  .ribbon {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  background: repeating-linear-gradient(
+    45deg,
+    #c00,
+    #c00 10px,
+    #fff 10px,
+    #fff 20px,
+    #0a0 20px,
+    #0a0 30px
+  );
+  z-index: 3;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('https://i.imgur.com/cMey1uO.png');
+  background-repeat: no-repeat;
+  background-position: top center;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+
+
+/* 🎄 Christmas Accent Colors ONLY (UI stays identical) */
+:root{
+  --hit:40px;
+  --radius:14px;
+  --grid-min:320px;
+  --text-scale:1;
+  --density:1;
+
+  /* 🎄 Christmas Colors (subtle, not UI-breaking) */
+  --accent:#e63946;      /* soft red */
+  --accent-2:#aee1ff;    /* icy blue */
+  --red:#ff5c5c;         /* error */
+  --green:#42d18c;       /* success */
+  --amber:#ffd86b;       /* warning */
+
+  /* keep your originals unchanged */
+}
+
+/* Device presets (UNCHANGED) */
+[data-device="mobile"]{ --hit:48px; --radius:16px; --grid-min:260px; --text-scale:1.06; --density:1.15; }
+[data-device="tablet"]{ --hit:46px; --radius:16px; --grid-min:300px; --text-scale:1.04; --density:1.08; }
+[data-device="desktop"]{ --hit:40px; --radius:14px; --grid-min:340px; --text-scale:1.0; --density:1.0; }
+[data-device="tv"]{ --hit:60px; --radius:18px; --grid-min:420px; --text-scale:1.15; --density:1.2; }
+[data-device="quest"]{ --hit:54px; --radius:18px; --grid-min:280px; --text-scale:1.08; --density:1.15; }
+
+
+
+
+/* EVERYTHING BELOW THIS POINT IS YOUR EXACT CSS, UNMODIFIED */
+
+
+
+
+.holiday-sparkle {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: url('https://i.imgur.com/LsrtxpK.png'); 
+  opacity: 0.08;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+
+/* ===== Snowfall Background ===== */
+.snow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0; /* keep behind everything */
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 12px;
+  opacity: 0.9;
+  animation: fall 10s linear infinite;
+}
+
+/* Randomized positions + delays */
+.snowflake:nth-child(1)  { left: 5%;  animation-delay: 0s;  }
+.snowflake:nth-child(2)  { left: 15%; animation-delay: 2s;  }
+.snowflake:nth-child(3)  { left: 25%; animation-delay: 4s;  }
+.snowflake:nth-child(4)  { left: 35%; animation-delay: 1s;  }
+.snowflake:nth-child(5)  { left: 45%; animation-delay: 5s;  }
+.snowflake:nth-child(6)  { left: 55%; animation-delay: 3s;  }
+.snowflake:nth-child(7)  { left: 65%; animation-delay: 0.5s;}
+.snowflake:nth-child(8)  { left: 75%; animation-delay: 2.5s;}
+.snowflake:nth-child(9)  { left: 85%; animation-delay: 1.7s;}
+.snowflake:nth-child(10) { left: 95%; animation-delay: 3.8s;}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10px) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(20px);
+    opacity: 0.2;
+  }
+}
+
+
+  /* ============================
+     🔐 New Login UI
+  ============================ */
+  #loginDialog {
+    padding: 0;
+    border-radius: 22px;
+    max-width: 880px;
+    width: min(95vw, 880px);
+    background: transparent;
+    overflow: hidden;
+    border: none;
+  }
+
+  .login-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    background: var(--login-bg);
+    border-radius: 22px;
+    border: 1px solid var(--login-border);
+    box-shadow: var(--login-glow);
+    overflow: hidden;
+  }
+
+  /* left panel */
+  .login-hero {
+    padding: 22px 22px 20px 24px;
+    background: radial-gradient(circle at top left, #00c6ff33, transparent 50%),
+                radial-gradient(circle at bottom right, #7f5dff33, transparent 55%),
+                linear-gradient(145deg, #ff0000, #178808);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  .login-badge {
+    align-self:flex-start;
+    padding:3px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.16);
+    font-size:.75rem;
+    color:#cfd8ff;
+    background:rgba(5,10,25,0.7);
+  }
+  .login-logo-mark {
+    inline-size:50px;
+    block-size:50px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    background:radial-gradient(circle at 30% 30%, #7be1ff, #00c6ff);
+    color:#020308;
+    font-weight:700;
+    font-size:1.2rem;
+    box-shadow:0 8px 24px rgba(0,198,255,0.35);
+  }
+  .login-hero-title {
+    margin-top:8px;
+    font-size:1.35rem;
+    font-weight:600;
+  }
+  .login-hero-sub {
+    font-size:.9rem;
+    color:#c6d0ff;
+    max-width:320px;
+  }
+  .login-hero-list {
+    margin-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:.85rem;
+    color:#d0dcff;
+  }
+  .login-hero-list span {
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .login-hero-foot {
+    margin-top:auto;
+    font-size:.78rem;
+    color:#a4b1ff;
+    opacity:.9;
+  }
+
+  /* right panel (form) */
+  .login-form-wrap {
+    padding: 22px 22px 20px;
+    background: var(--login-panel-soft);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .login-form-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .login-form-title {
+    font-weight:600;
+    font-size:1.05rem;
+  }
+  .login-form-sub {
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-pill {
+    font-size:.75rem;
+    border-radius:999px;
+    padding:4px 10px;
+    border:1px solid var(--border);
+    background:rgba(10,14,22,0.9);
+    color:var(--muted);
+  }
+  .login-field {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    margin-top:6px;
+  }
+  .login-label {
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-input {
+    width:100%;
+  }
+  .login-actions {
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .login-secondary {
+    font-size:.78rem;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .login-status {
+    font-size:.8rem;
+    min-height:18px;
+    margin-top:6px;
+  }
+  .login-status.ok {
+    color:var(--green);
+  }
+  .login-status.err {
+    color:var(--red);
+  }
+  .login-close {
+    background:transparent;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px 8px;
+    cursor:pointer;
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-close:hover {
+    background:rgba(255,255,255,0.04);
+  }
+
+  /* mobile: stack columns */
+  @media (max-width: 720px) {
+    .login-shell {
+      grid-template-columns: minmax(0,1fr);
+    }
+    .login-hero {
+      display:none;
+    }
+  }
+
+  /* full-screen auth lock overlay button style override */
+  #unlockLoginBtn.btn {
+    border-radius:999px;
+  }
+
+  /* Apply variables to existing UI */
+  body{
+    font-size: calc(16px * var(--text-scale));
+    gap: calc(20px * var(--density));
+    padding: calc(22px * var(--density));
+  }
+  .card{ border-radius: var(--radius); padding: calc(16px * var(--density)); }
+  .btn{ min-height: var(--hit); border-radius: var(--radius); padding: calc(10px * var(--density)) calc(12px * var(--density)); }
+  .btn.small{ padding: calc(6px * var(--density)) calc(8px * var(--density)); min-height: calc(var(--hit) - 8px); border-radius: calc(var(--radius) - 4px); }
+  input[type="search"],input[type="text"],input[type="url"],select{
+    min-height: calc(var(--hit) - 8px);
+    border-radius: calc(var(--radius) - 2px);
+    padding: calc(10px * var(--density)) calc(14px * var(--density));
+  }
+  .grid{ grid-template-columns: repeat(auto-fit,minmax(var(--grid-min),1fr)); gap: calc(16px * var(--density)); }
+
+  /* Mobile simplifications */
+  [data-device="mobile"] .eq{ display:none; }
+  [data-device="mobile"] .hint{ display:none; }
+  [data-device="mobile"] .toolbar{ gap: 8px; }
+  [data-device="mobile"] .btn.ghost{ display:none; }
+  [data-device="mobile"] #exportBtn,
+  [data-device="mobile"] #importBtn{ display:none; }
+  [data-device="mobile"] .tag{ display:none; }
+
+  /* Quest / TV */
+  [data-device="quest"] .eq{ display:none; }
+  [data-device="quest"] .hint{ display:none; }
+  [data-device="quest"] #favoritesOnly{ display:none; }
+  [data-device="tv"] input, [data-device="tv"] .btn.small{ font-size: 1.05em; }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0e0f12;--panel:#17191e;--panel-2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
+    --border:#232a33;--shadow:0 10px 36px rgba(0,0,0,.35)
+  }
+  [data-theme="light"]{
+    --bg:#f6f8fb;--panel:#ffffff;--panel-2:#f0f4f8;--muted:#657282;--txt:#0c1014;
+    --border:#dfe7ef;--shadow:0 8px 28px rgba(0,0,0,.08)
+  }
+  html,body{height:100%}
+  body{
+    background:
+      
+      linear-gradient(120deg, #b30000, #006400, #d6d5d1);
+    color:var(--txt);font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;gap:20px;padding:22px
+  }
+  header{max-width:1200px;margin:0 auto;width:100%}
+  .topbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .brand{font-weight:700;font-size:1.4rem;letter-spacing:.3px}
+  .toolbar{display:flex;gap:10px;align-items:center;margin-left:auto;flex-wrap:wrap}
+  .btn{cursor:pointer;border:none;border-radius:12px;padding:10px 12px;font-weight:600;background:var(--panel-2);color:var(--txt);border:1px solid var(--border)}
+  .btn.main{background:var(--accent);color:#041017;border-color:transparent}
+  .btn.warn{background:#201d12;border-color:#3a3218;color:#ffd876}
+  .btn.ghost{background:transparent;border:1px dashed var(--border)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  input[type="search"],input[type="text"],input[type="url"],select{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px 14px;color:var(--txt);outline:none
+  }
+  input[type="search"]{min-width:240px;flex:1}
+  .badge{padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:var(--panel-2);font-size:.78rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;max-width:1200px;margin:0 auto;width:100%}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;outline:none}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .logo{inline-size:60px;block-size:60px;border-radius:50%;display:grid;place-items:center;font-weight:700;
+        background:radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent));color:#0b0c0f;
+        box-shadow:0 0 0 3px var(--panel), 0 8px 20px color-mix(in srgb, var(--accent) 40%, transparent)}
+  .title{font-size:1.08rem;font-weight:600}
+  .pill{margin-left:auto;padding:6px 10px;border-radius:999px;font-size:.83rem;border:1px solid var(--border);background:var(--panel-2);color:var(--muted)}
+  .ok{color:var(--green);border-color:#204134;background:#0d1f1a}
+  .warn{color:var(--amber);border-color:#3b3320;background:#1e1a0d}
+  .bad{color:var(--red);border-color:#3b2228;background:#1e0e11}
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .vol{accent-color:var(--accent);width:120px}
+  .fav{cursor:pointer;background:transparent;border:none;font-size:1.1rem}
+  .fav[aria-pressed="true"]{color:var(--amber)}
+  .tool{display:flex;gap:8px;margin-left:auto}
+  .eq{display:flex;gap:3px;height:28px;align-items:flex-end}
+  .eq .bar{width:5px;min-height:3px;background:var(--accent)}
+  details{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px}
+  summary{cursor:pointer;color:var(--muted)}
+  .log{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:.85rem;margin-top:8px;max-height:160px;overflow:auto;white-space:pre-wrap}
+  footer{margin-top:auto;text-align:center;color:var(--muted);font-size:.9rem}
+  .hint{color:var(--muted);margin-top:4px}
+  .toast{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:30}
+  .toast .msg{background:var(--panel);border:1px solid var(--border);padding:10px 12px;border-radius:12px;box-shadow:var(--shadow)}
+  .mini{position:sticky;bottom:0;z-index:20;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:10px;max-width:1200px;margin:8px auto 0;display:flex;align-items:center;gap:10px}
+  .mini .name{font-weight:600}
+  .toggle{cursor:pointer}
+  .section{max-width:1200px;margin:0 auto;width:100%}
+  .hr{height:1px;background:var(--border);margin:6px 0}
+  .kbd{font-family:ui-monospace,Consolas,Menlo,monospace;background:var(--panel-2);border:1px solid var(--border);border-radius:6px;padding:0 6px}
+  .btn.small{padding:6px 8px;border-radius:10px;font-size:.9rem}
+  .tag{font-size:.75rem;padding:2px 6px;border:1px solid var(--border);border-radius:999px;background:var(--panel-2);color:var(--muted)}
+  dialog{border:none;border-radius:16px;max-width:560px;width:92%;background:var(--panel);color:var(--txt);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+  dialog::backdrop{background:rgb(0 0 0 / .5)}
+  .dialog-row{display:flex;gap:12px;margin-top:10px}
+  .danger{color:var(--red)}
+  .field-help{font-size:.8rem;color:var(--muted)}
+
+</style>
+
+</head>
+
+
+
+    
+<body>
+
+<div class="snow">
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+</div>
+
+<div class="ribbon"></div>
+<div class="xmas-fall">
+  <div class="xmas-icon" style="left:10%">🎄</div>
+  <div class="xmas-icon" style="left:30%">⭐</div>
+  <div class="xmas-icon" style="left:50%">🎁</div>
+  <div class="xmas-icon" style="left:70%">❄️</div>
+  <div class="xmas-icon" style="left:85%">🔔</div>
+</div>
+
+
+
+
+
+
+<dialog id="loginDialog">
+  <form id="loginForm" method="dialog" class="login-shell">
+    <!-- Left: brand / features -->
+    <div class="login-hero">
+      <span class="login-badge">MoonLitGames · FM Radio Player</span>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <div class="login-logo-mark">FM</div>
+        <div>
+          <div style="font-weight:600;">FM Radio Player</div>
+          <div style="font-size:.78rem;color:#c4d3ff;">Modern streaming, self-healing stations.</div>
+        </div>
+      </div>
+      <div class="login-hero-title">Sign in to unlock your stations</div>
+      <div class="login-hero-sub">
+        Log in once and we’ll remember your favorites, custom stations, and listening history across this browser.
+      </div>
+      <div class="login-hero-list">
+        <span>🎧 <span>Sync your favorites and custom URLs.</span></span>
+        <span>💾 <span>Local-first — your data stays in your browser.</span></span>
+        <span>🛡️ <span>Protected by FM Radio Login API (rate limits, IP/role bans).</span></span>
+      </div>
+      <div class="login-hero-foot">
+        Tip: Your account is only for FM Radio Player — it does not touch any music service logins.
+      </div>
+    </div>
+
+    <!-- Right: actual form -->
+    <div class="login-form-wrap">
+      <div class="login-form-header">
+        <div>
+          <div class="login-form-title">Welcome back 👋</div>
+          <div class="login-form-sub">Use your FM account to continue listening.</div>
+        </div>
+        <button type="button" class="login-close" onclick="loginDialog.close()">Close</button>
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="username">Username</label>
+        <input id="username" name="username" class="login-input" placeholder="moonlit_fan" required>
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="password">Password</label>
+        <input id="password" name="password" class="login-input" type="password" placeholder="••••••••" required>
+      </div>
+
+      <div class="login-secondary">
+        New here? Click <strong>Sign Up</strong> once — we’ll create your account and log you in.
+      </div>
+
+      <div class="login-actions">
+        <button class="btn main" id="loginBtn" type="submit" value="login">Log In</button>
+        <button class="btn" id="signupBtn" type="button">Sign Up</button>
+      </div>
+
+      <p id="loginStatus" class="login-status"></p>
+
+      <div class="login-secondary">
+        Security: Multiple failed attempts may temporarily lock your account. VPN/proxy logins may be flagged by the API.
+      </div>
+    </div>
+  </form>
+</dialog>
+
+
+
+<!-- Add Login button to your toolbar -->
+<button class="btn small main" id="openLogin">👤 Login</button>
+
+
+<!-- Maintenance Notice Modal -->
+<div id="staffNotice" role="dialog" aria-labelledby="staffTitle" aria-modal="true"
+     style="position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);z-index:99999;">
+  <div style="width:min(92vw,520px);background:#17191e;border:1px solid #232a33;color:#e9eef3;
+              border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.35);padding:18px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;">
+      <h3 id="staffTitle" style="margin:0;font:600 1.1rem/1.3 Poppins,system-ui;">Notice</h3>
+      <button id="staffClose" aria-label="Close notice"
+              style="background:#10141a;border:1px solid #232a33;color:#e9eef3;border-radius:10px;
+                     padding:6px 10px;cursor:pointer">✕</button>
+    </div>
+    <p style="margin:.8rem 0 0;color:#cfd6dd">
+      This website will not be updated due to lack of staff.
+    </p>
+    <p style="margin:.6rem 0 0;color:#9aa4ad;font-size:.9rem">
+      Existing features continue to work as-is. Thank you for understanding.
+    </p>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;color:#9aa4ad;font-size:.9rem">
+      <input id="staffDontShow" type="checkbox"> Don’t show this again
+    </label>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const KEY = "mlg.staffNotice.dismissed";
+    if (localStorage.getItem(KEY) === "1") {
+      document.getElementById("staffNotice").style.display = "none";
+      return;
+    }
+    const closeBtn = document.getElementById("staffClose");
+    const box = document.getElementById("staffNotice");
+    const dont = document.getElementById("staffDontShow");
+
+    function dismiss() {
+      if (dont.checked) localStorage.setItem(KEY, "1");
+      box.style.display = "none";
+    }
+    closeBtn.addEventListener("click", dismiss);
+    // close on ESC
+    document.addEventListener("keydown", e => { if (e.key === "Escape") dismiss(); });
+    // trap initial focus
+    setTimeout(() => closeBtn.focus(), 0);
+  })();
+</script>
+
+    
+    <div class="topbar" aria-label="Top Controls">
+      <div class="brand">🎧 FM Radio Player</div>
+      <span class="tag">Self-healing streams</span>
+      <span class="tag">Error codes</span>
+      <span class="tag">Favorites</span>
+
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search stations… (/ to focus)" title="Press / to focus search" />
+        <button class="btn small" id="sleepTimerBtn" title="Set sleep timer"> Sleep</button>
+        <button class="btn small" id="showChangelog" title="Show patch notes">What's New</button>
+        <button class="btn small" id="toggleTheme" title="Toggle theme">Toggle Theme</button>
+        <button class="btn small" id="stopAll" title="Stop all stations (S)">Stop All</button>
+        <button class="btn small" id="muteAll" title="Mute all stations (M)">Mute All</button>
+        <button class="btn small" id="favoritesOnly" title="Show favorites only">★ Favorites</button>
+        <button class="btn small main" id="addStation" title="Add your own station">+ Add Station</button>
+
+
+<button id="plansBtn" style="
+  background:#00c6ff;
+  color:#041017;
+  font-weight:600;
+  border:none;
+  border-radius:12px;
+  padding:10px 20px;
+  cursor:pointer;
+  transition:all .2s ease;
+  box-shadow:0 6px 20px rgba(0,198,255,.25);
+">
+  📋 View Future Plans
+</button>
+
+<script>
+  document.getElementById('plansBtn').addEventListener('click', () => {
+    window.location.href = '/plans.html';
+  });
+</script>
+
+
+          
+
+        <button class="btn small" id="exportBtn" title="Export stations JSON">Export</button>
+        <button class="btn small" id="importBtn" title="Import stations JSON">Import</button>
+      </div>
+    </div>
+    <div class="hint">Tip: Space = play/pause focused card • S = Stop All • M = Mute All • / = Search</div>
+  </header>
+
+  <section class="section">
+    <div class="grid" id="grid" tabindex="-1"></div>
+  </section>
+
+  <section class="mini" id="mini" hidden>
+    <span>Now Playing:</span>
+    <span class="name" id="miniName">—</span>
+    <span class="pill ok" id="miniPill">Playing</span>
+    <div class="tool" style="margin-left:auto">
+      <button class="btn small" id="miniPlay">⏸ Pause</button>
+      <button class="btn small" id="miniStop">■ Stop</button>
+      <input class="vol" id="miniVol" type="range" min="0" max="1" step="0.01" value="0.7" />
+    </div>
+  </section>
+<div id="hiddenCode" style="display:none">
+      <form id="contact" action="https://formspree.io/f/mrbozpqq" method="POST">
+  <input type="email" name="email" placeholder="Your email" required>
+  <input name="subject" placeholder="Subject" required>
+  <textarea name="message" placeholder="Your message..." required></textarea>
+  <button>Send</button>
+  <p id="status" style="margin-top:8px;color:#0bd;"> </p>
+</form>
+
+  <p>This content exists but is invisible.</p>
+</div>
+
+
+
+<script>
+const form = document.getElementById('contact');
+const statusEl = document.getElementById('status');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.textContent = 'Sending...';
+  try {
+    const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept':'application/json' }});
+    if (res.ok) { form.reset(); statusEl.textContent = 'Sent! Check your inbox.'; }
+    else { statusEl.textContent = 'Failed to send. Try again.'; }
+  } catch { statusEl.textContent = 'Network error.'; }
+});
+</script>
+
+
+  <footer>© 2025 FM Radio Player. All rights reserved.</footer>
+  <div class="toast" id="toast"></div>
+
+  <!-- Add/Edit Station Dialog -->
+  <dialog id="stationDialog">
+    <form method="dialog" id="stationForm">
+      <h3 id="dialogTitle">Add Station</h3>
+      <div class="dialog-row"><input id="stName" type="text" placeholder="Station Name" required style="flex:1"></div>
+      <div class="dialog-row"><input id="stUrl" type="url" placeholder="Primary Stream URL (http/https)" required style="flex:1"></div>
+      <div class="dialog-row"><input id="stFallbacks" type="text" placeholder="Fallback URLs (comma-separated)" style="flex:1"></div>
+      <div class="dialog-row">
+        <input id="stLogo" type="text" placeholder="Logo text (e.g., 98.5)" style="flex:1">
+        <select id="stMime" style="min-width:180px">
+          <option value="">Auto MIME</option>
+          <option value="audio/mpeg">audio/mpeg</option>
+          <option value="audio/aac">audio/aac</option>
+          <option value="audio/aacp">audio/aacp</option>
+          <option value="audio/ogg">audio/ogg</option>
+        </select>
+      </div>
+      <div class="dialog-row">
+        <div style="flex:1">
+          <label class="field-help">Watchdog (seconds)
+            <input id="stWatchdog" type="number" min="6" max="120" value="20" style="width:100%">
+          </label>
+        </div>
+        <div style="flex:1">
+          <label class="field-help">Backoff max exponent (1→2^n secs)
+            <input id="stMaxExp" type="number" min="2" max="6" value="4" style="width:100%">
+          </label>
+        </div>
+      </div>
+      <div class="dialog-row">
+        <button class="btn main" id="saveStation" value="default">Save</button>
+        <button class="btn" id="cancelDialog">Cancel</button>
+        <button class="btn danger" id="deleteStation" value="delete" style="margin-left:auto" hidden>Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Patch Notes Dialog -->
+<dialog id="changelogDialog" aria-labelledby="changelogTitle">
+  <form method="dialog" id="changelogForm">
+    <h3 id="changelogTitle">What’s New</h3>
+    <div id="changelogBody" class="log" style="max-height:320px; overflow:auto; margin-top:8px"></div>
+
+    <div class="dialog-row" style="justify-content:space-between; align-items:center">
+      <label style="display:flex; gap:8px; align-items:center; font-size:.9rem; color:var(--muted)">
+        <input type="checkbox" id="showOnStartup" />
+        Show this when there’s a new version
+      </label>
+      <div style="display:flex; gap:8px">
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- Sleep Timer Dialog (v2.2.0) -->
+<dialog id="sleepDialog">
+  <form method="dialog" id="sleepForm">
+    <h3>Sleep Timer</h3>
+    <div class="dialog-row">
+      <label style="flex:1">
+        Minutes until stop
+        <input id="sleepMinutes" type="number" min="1" max="180" value="20" style="width:100%">
+      </label>
+    </div>
+    <div class="dialog-row">
+      <label style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="sleepFade" checked>
+        Fade out in the last 10 seconds
+      </label>
+    </div>
+    <div class="dialog-row" style="justify-content:space-between">
+      <button class="btn" value="cancel">Cancel</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn danger" id="cancelSleep" type="button">Cancel Timer</button>
+        <button class="btn main" id="startSleep" value="default">Start</button>
+      </div>
+    </div>
+    <div class="field-help" id="sleepStatus" style="margin-top:8px"></div>
+  </form>
+</dialog>
+
+
+
+
+  <input type="file" id="importFile" accept="application/json" hidden />
+
+<script>
+
+
+
+
+/* =========================================================
+   FM Radio Player (v2) — Patched Core
+   - Fixes: lifecycle leaks, WebAudio disconnects,
+            reconnect timeout cleanup, MIME handling,
+            AudioContext resume, mixed-content guard,
+            XSS-safe templating, import validation,
+            attempt/reset logic, a11y improvements.
+   ========================================================= */
+
+/* ==============================
+   Storage & Config
+============================== */
+const LS = {
+  THEME: 'fm.theme',
+  VOLUME: 'fm.volume',           // global default volume
+  FAVORITES: 'fm.favorites',     // Set<string>
+  STATIONS: 'fm.stations',       // user-added stations array
+  LAST: 'fm.last'                // {id}
+};
+
+// v2.2.0 additions
+LS.SHOW_FAV_ONLY = 'fm.favoritesOnly';
+LS.SLEEP_MINUTES = 'fm.sleep.minutes';
+
+
+// Default stations (unchanged)
+const DEFAULT_STATIONS = [
+  { id: "wrxlhd2", name: "Big 98.5 FM", logo: "98.5",
+    src: "https://live.amperwave.net/manifest/audacy-wrxlhd2aac-imc", mime: "audio/aac",
+    fallbacks: ["https://prod-54-46-223-62.amperwave.net/wrxlhd2.aac"], watchdog: 20, maxExp: 4 },
+  { id: "classic96_5", name: "Classic Rock 96.5", logo: "96.5",
+    src: "https://stream.rcs.revma.com/98mxmkcw57uvv", mime: "audio/mpeg", fallbacks: [], watchdog: 20, maxExp: 4 },
+  { id: "k95", name: "K95 95.3 FM", logo: "95.3",
+    src: "https://stream.rcs.revma.com/uqgf3huv57uvv", mime: "audio/mpeg", fallbacks: [], watchdog: 20, maxExp: 4 },
+];
+
+
+
+/* ==============================
+   Utilities
+
+   /* ==============================
+   v2.2.0 — Auto Device Detection
+============================== */
+function detectDevice() {
+  const ua = (navigator.userAgent || '').toLowerCase();
+  const w = Math.min(window.innerWidth || 0, screen.width || Infinity);
+  const h = Math.min(window.innerHeight || 0, screen.height || Infinity);
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Allow manual override via ?device=mobile|tablet|desktop|tv|quest
+  const params = new URLSearchParams(location.search);
+  const forced = params.get('device');
+  if (forced) return forced;
+
+  // Heuristics
+  const isQuest = /quest|oculus/.test(ua);
+  if (isQuest) return 'quest';
+
+  const isTV = /smart-tv|hbbtv|appletv|tizen|webos|viera|bravia/.test(ua);
+  if (isTV) return 'tv';
+
+  const shortSide = Math.min(w, h);
+  if (shortSide <= 480 || (isTouch && shortSide <= 540)) return 'mobile';
+  if (shortSide <= 900) return 'tablet';
+  return 'desktop';
+}
+
+function applyDeviceDataAttr() {
+  const d = detectDevice();
+  document.documentElement.setAttribute('data-device', d);
+}
+window.addEventListener('resize', () => {
+  // Update only if the bucket changes (avoids thrash)
+  const before = document.documentElement.getAttribute('data-device');
+  const next = detectDevice();
+  if (before !== next) applyDeviceDataAttr();
+});
+
+
+const MediaErrCodes = { 1:'ABORTED', 2:'NETWORK', 3:'DECODE', 4:'SRC_NOT_SUPPORTED' };
+
+function loadTheme(){
+  const t = localStorage.getItem(LS.THEME) || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem(LS.THEME, next);
+  toast(`Theme: ${next}`);
+}
+
+/* v2.2.0 — Deep-link autostart: ?play=<stationId> */
+function tryDeepLinkAutoplay() {
+  const id = new URLSearchParams(location.search).get('play');
+  if (!id) return false;
+  const p = players.find(x => x.station.id === id);
+  if (p) { p.safePlay(); return true; }
+  return false;
+}
+
+
+// Safer JSON helpers
+function loadFavorites(){
+  try { return new Set(JSON.parse(localStorage.getItem(LS.FAVORITES) || '[]')); }
+  catch { return new Set(); }
+}
+function saveFavorites(set){
+  localStorage.setItem(LS.FAVORITES, JSON.stringify([...set]));
+}
+function loadUserStations(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS.STATIONS) || '[]');
+    return Array.isArray(raw) ? raw.filter(validateStation) : [];
+  } catch { return []; }
+}
+function saveUserStations(arr){
+  const clean = arr.filter(validateStation);
+  localStorage.setItem(LS.STATIONS, JSON.stringify(clean));
+}
+
+// Simple schema validator + normalizer
+function validateStation(s){
+  if (!s || typeof s !== 'object') return false;
+  if (!s.id || !s.name || !s.src) return false;
+  if (typeof s.id !== 'string' || typeof s.name !== 'string' || typeof s.src !== 'string') return false;
+  if (s.fallbacks && !Array.isArray(s.fallbacks)) return false;
+  // bounds
+  if (s.watchdog && (s.watchdog < 6 || s.watchdog > 120)) s.watchdog = 20;
+  if (s.maxExp && (s.maxExp < 2 || s.maxExp > 6)) s.maxExp = 4;
+  return true;
+}
+
+// XSS-safe text setter
+function setText(el, text){ if (el) el.textContent = String(text ?? ''); }
+
+// Optional cache buster (off by default to avoid breaking some providers)
+const ENABLE_CACHE_BUST = false;
+function fresh(url){
+  if (!ENABLE_CACHE_BUST) return url;
+  const u = new URL(url, location.href);
+  u.searchParams.set('_t', Date.now().toString());
+  return u.toString();
+}
+
+const ERR_MSG = {
+  E001: "Browser blocked autoplay (tap Play).",
+  E002: "User agent aborted playback.",
+  E003: "Network error while fetching stream.",
+  E004: "Decoder error (bad frames).",
+  E005: "Source not supported or bad MIME/URL.",
+  E006: "Stream stalled; reconnecting.",
+  E007: "CORS/network blocked the stream request.",
+  E008: "Backoff maxed; continuing with steady retries.",
+  E009: "Manual reconnect requested.",
+  E010: "Unexpected error.",
+  E011: "All endpoints failed; rotating again.",
+  E012: "Mixed-content blocked (http on https).",
+};
+
+/* ==============================
+   UI Elements (existing DOM)
+============================== */
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const toggleThemeBtn = document.getElementById('toggleTheme');
+const stopAllBtn = document.getElementById('stopAll');
+const muteAllBtn = document.getElementById('muteAll');
+const favOnlyBtn = document.getElementById('favoritesOnly');
+const addStationBtn = document.getElementById('addStation');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importFile = document.getElementById('importFile');
+
+
+const mini = document.getElementById('mini');
+const miniName = document.getElementById('miniName');
+const miniPill = document.getElementById('miniPill');
+const miniPlay = document.getElementById('miniPlay');
+const miniStop = document.getElementById('miniStop');
+const miniVol = document.getElementById('miniVol');
+
+const toastWrap = document.getElementById('toast');
+
+// a11y: announce to screen readers
+toastWrap.setAttribute('aria-live','polite');
+toastWrap.setAttribute('role','status');
+
+
+
+function toast(msg, ms=2200){
+  const el = document.createElement('div'); el.className='msg'; el.textContent = msg;
+  toastWrap.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, ms);
+}
+
+/* ==============================
+   Station Manager
+============================== */
+let favorites = loadFavorites();
+let userStations = loadUserStations();
+let showingFavoritesOnly = localStorage.getItem(LS.SHOW_FAV_ONLY) === 'true';
+
+function allStations(){
+  // Merge default + user stations, dedupe by id (user overrides)
+  const map = new Map(DEFAULT_STATIONS.map(s=>[s.id,s]));
+  for(const s of userStations){ map.set(s.id, s); }
+  return [...map.values()];
+}
+function nextIdFromName(name){
+  return name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40) + '_' + Math.floor(Math.random()*1e4);
+}
+
+/* ==============================
+   Audio Graph
+============================== */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let sharedCtx = null; // lazy
+function getCtx(){ if(!sharedCtx) sharedCtx = new AudioCtx(); return sharedCtx; }
+async function resumeCtxIfSuspended(){
+  if (!sharedCtx) return;
+  if (sharedCtx.state === 'suspended'){
+    try { await sharedCtx.resume(); } catch {}
+  }
+}
+
+/* ==============================
+   Radio Player Class
+============================== */
+class RadioPlayer {
+  constructor(station, mount, onFocus) {
+    this.station = {
+      id: station.id,
+      name: station.name,
+      logo: station.logo,
+      src: station.src,
+      fallbacks: Array.isArray(station.fallbacks)? station.fallbacks.slice(0,6): [],
+      mime: station.mime,
+      watchdog: station.watchdog || 20,
+      maxExp: station.maxExp || 4,
+    };
+    this.mount = mount;
+    this.onFocus = onFocus;
+
+    // State
+    this._reconnectTimeoutId = null;
+    this._inReconnect = false;
+    this._warmupUntil = 0;
+    this._lastCt = 0;
+    this.watchdogSecs = this.station.watchdog;
+    this.maxExp = this.station.maxExp;
+    this.attempt = 0;
+
+    this.isUserPaused = true;
+    this._lastTimeUpdate = 0;
+    this._watchdogTimer = null;
+    this._countdownTimer = null;
+    this._countdownUntil = 0;
+
+    // endpoint rotation
+    this.endpoints = [this.station.src, ...this.station.fallbacks].filter(Boolean);
+    this.endpointIndex = 0;
+
+    // WebAudio
+    this.ctx = null; this.sourceNode = null; this.gainNode = null; this.analyser = null; this.eqRAF = null;
+
+    // uptime
+    this._startedAt = 0; // ms
+    this._uptimeTimer = null;
+
+    this.render();
+    // After render();
+if (!tryDeepLinkAutoplay()) {
+  tryResumeLastOnLoad();
+}
+
+    this.initAudio();
+    this.bind();
+  }
+
+  /* ---------- UI ---------- */
+  render(){
+    this.mount.className = 'card';
+    this.mount.tabIndex = 0;
+
+    // Build DOM safely (no user HTML injection)
+    /* ==============================
+   v2.2.0 — Sleep Timer
+============================== */
+const sleepDialog = document.getElementById('sleepDialog');
+const sleepForm = document.getElementById('sleepForm');
+const sleepMinutes = document.getElementById('sleepMinutes');
+const sleepFade = document.getElementById('sleepFade');
+const sleepStatus = document.getElementById('sleepStatus');
+const sleepTimerBtn = document.getElementById('sleepTimerBtn');
+const startSleepBtn = document.getElementById('startSleep');
+const cancelSleepBtn = document.getElementById('cancelSleep');
+
+let sleepTimerId = null;
+let sleepFadeId = null;
+let sleepEndsAt = 0;
+function updateSleepStatus() {
+  if (!sleepEndsAt) { sleepStatus.textContent = 'No timer set.'; return; }
+  const s = Math.max(0, Math.ceil((sleepEndsAt - Date.now()) / 1000));
+  const m = Math.floor(s / 60);
+  const r = String(s % 60).padStart(2,'0');
+  sleepStatus.textContent = `Timer active — ${m}:${r} remaining.`;
+}
+function clearSleepTimer() {
+  if (sleepTimerId) clearTimeout(sleepTimerId);
+  if (sleepFadeId) clearInterval(sleepFadeId);
+  sleepTimerId = null; sleepFadeId = null; sleepEndsAt = 0;
+  updateSleepStatus();
+  toast('Sleep timer canceled');
+}
+
+function startSleepTimer(mins, doFade) {
+  clearSleepTimer();
+  const ms = Math.max(1, mins) * 60 * 1000;
+  sleepEndsAt = Date.now() + ms;
+  updateSleepStatus();
+
+  
+
+  // optional fade in last 10s
+  if (doFade) {
+    const fadeStart = ms - 10_000;
+    if (fadeStart > 0) {
+      setTimeout(() => {
+        sleepFadeId = setInterval(() => {
+          players.forEach(p => {
+            if (!p.audio) return;
+            const v = Math.max(0, p.audio.volume - 0.05);
+            p.audio.volume = v;
+            if (miniBinding.player === p) miniVol.value = String(v);
+            p.$vol.value = String(v);
+          });
+        }, 500);
+      }, fadeStart);
+    }
+  }
+
+  sleepTimerId = setTimeout(() => {
+    players.forEach(p => p.stop());
+    clearSleepTimer();
+    toast('Good night. All stations stopped.');
+  }, ms);
+
+  toast(`Sleep timer set for ${mins} min${mins>1?'s':''}.`);
+}
+
+// Wire UI
+if (sleepTimerBtn) {
+  sleepTimerBtn.addEventListener('click', () => {
+    const saved = Number(localStorage.getItem(LS.SLEEP_MINUTES) || '20') || 20;
+    sleepMinutes.value = saved;
+    updateSleepStatus();
+    sleepDialog.showModal();
+  });
+}
+if (startSleepBtn) {
+  startSleepBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const mins = Math.max(1, Math.min(180, Number(sleepMinutes.value)||20));
+    localStorage.setItem(LS.SLEEP_MINUTES, String(mins));
+    startSleepTimer(mins, sleepFade.checked);
+    sleepDialog.close();
+  });
+}
+if (cancelSleepBtn) {
+  cancelSleepBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearSleepTimer();
+    sleepDialog.close();
+  });
+}
+
+    const rowTop = document.createElement('div'); rowTop.className = 'row';
+    const logo = document.createElement('div'); logo.className = 'logo'; logo.dataset.role='logo';
+    setText(logo, this.station.logo || 'FM');
+    const title = document.createElement('div'); title.className='title'; title.dataset.role='title';
+    setText(title, this.station.name);
+    const favBtn = document.createElement('button'); favBtn.className='fav'; favBtn.dataset.role='fav';
+    favBtn.setAttribute('aria-pressed', String(favorites.has(this.station.id)));
+    favBtn.setAttribute('aria-label','Toggle favorite');
+    favBtn.title='Toggle favorite';
+    favBtn.textContent='★';
+    const pill = document.createElement('span'); pill.className='pill'; pill.dataset.role='pill'; setText(pill,'Idle');
+
+    rowTop.append(logo,title,favBtn,pill);
+
+    const rowCtrls = document.createElement('div'); rowCtrls.className='row controls';
+    const btnPlay = document.createElement('button'); btnPlay.className='btn main'; btnPlay.dataset.role='play'; btnPlay.textContent='▶ Play'; btnPlay.setAttribute('aria-label','Play or Pause');
+    const btnRe = document.createElement('button'); btnRe.className='btn'; btnRe.dataset.role='reconnect'; btnRe.title='Reconnect now'; btnRe.textContent='↻ Reconnect';
+    const btnStop = document.createElement('button'); btnStop.className='btn ghost'; btnStop.dataset.role='stop'; btnStop.title='Stop'; btnStop.textContent='■ Stop';
+    const vol = document.createElement('input'); vol.className='vol'; vol.dataset.role='vol'; vol.type='range'; vol.min='0'; vol.max='1'; vol.step='0.01'; vol.value=String(loadVolume()); vol.setAttribute('aria-label','Volume');
+    const err = document.createElement('span'); err.className='badge'; err.dataset.role='err'; setText(err,'OK');
+
+    const tool = document.createElement('div'); tool.className='tool';
+    const btnEdit = document.createElement('button'); btnEdit.className='btn small'; btnEdit.dataset.role='edit'; btnEdit.title='Edit'; btnEdit.textContent='Edit';
+    tool.append(btnEdit);
+
+    rowCtrls.append(btnPlay,btnRe,btnStop,vol,err,tool);
+
+    const rowInfo = document.createElement('div'); rowInfo.className='row'; rowInfo.style.gap='14px';
+    const eq = document.createElement('div'); eq.className='eq'; eq.dataset.role='eq'; eq.setAttribute('aria-label','Live levels');
+    for(let i=0;i<24;i++){ const b=document.createElement('div'); b.className='bar'; eq.append(b); }
+    const ep = document.createElement('span'); ep.className='badge'; ep.dataset.role='endpoint'; ep.title='Current endpoint';
+    const up = document.createElement('span'); up.className='badge'; up.dataset.role='uptime'; up.title='Stream uptime';
+    const nx = document.createElement('span'); nx.className='badge'; nx.dataset.role='nx'; nx.title='Next reconnect';
+    setText(ep, `EP 1/${this.endpoints.length}`); setText(up,'00:00'); setText(nx,'—');
+
+    rowInfo.append(eq,ep,up,nx);
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); setText(summary,'Diagnostics / Log');
+    const log = document.createElement('div'); log.className='log'; log.dataset.role='log';
+    details.append(summary,log);
+
+    this.mount.replaceChildren(rowTop,rowCtrls,rowInfo,details);
+
+    const $ = (sel)=>this.mount.querySelector(sel);
+    this.$ = $;
+    this.$pill = pill;
+    this.$play = btnPlay;
+    this.$reconnect = btnRe;
+    this.$stop = btnStop;
+    this.$vol = vol;
+    this.$err = err;
+    this.$log = log;
+    this.$fav = favBtn;
+    this.$edit = btnEdit;
+    this.$eq = eq;
+    this.$endpoint = ep;
+    this.$uptime = up;
+    this.$nx = nx;
+
+    this.mount.addEventListener('focus', ()=>this.onFocus?.(this));
+  }
+
+  focus(){ this.mount.focus(); }
+
+  log(line){
+    const s = `[${new Date().toLocaleTimeString()}] ${line}\n`;
+    this.$log.textContent = s + this.$log.textContent;
+  }
+
+  setPill(text, mode=''){
+    setText(this.$pill, text);
+    this.$pill.classList.remove('ok','warn','bad');
+    if (mode==='ok') this.$pill.classList.add('ok');
+    if (mode==='warn') this.$pill.classList.add('warn');
+    if (mode==='bad') this.$pill.classList.add('bad');
+    if (miniBinding.player === this){
+      setText(miniPill, text);
+      miniPill.className = 'pill ' + (mode||'');
+    }
+  }
+
+  setErr(code, append=""){
+    const msg = ERR_MSG[code] || 'Unknown';
+    setText(this.$err, `${code}${append ? ' — '+append : ''}`);
+    this.log(`ERROR ${code}: ${msg}${append ? ' ('+append+')' : ''}`);
+  }
+
+  _updateEndpointBadge(){
+    setText(this.$endpoint, `EP ${this.endpointIndex+1}/${this.endpoints.length}`);
+  }
+
+  /* ---------- Audio ---------- */
+  initAudio(){
+    // Guard mixed content early
+    const url = this._currentUrl();
+    if (location.protocol === 'https:' && /^http:\/\//i.test(url)){
+      this.setErr('E012', 'upgrade URL to https');
+      this.setPill('Blocked (mixed content)','bad');
+      return;
+    }
+
+    this.audio = new Audio();
+this.audio.preload = 'auto'; // ✅ preload to buffer enough for playback
+this.audio.crossOrigin = 'anonymous';
+this.audio.setAttribute('playsinline','true');
+this.audio.autoplay = true;  // ✅ auto start once ready
+
+    // Use <source> child for MIME (audio.type is not used)
+    const srcEl = document.createElement('source');
+    srcEl.src = fresh(url);
+    if (this.station.mime) srcEl.type = this.station.mime;
+    // Clear previous children if any
+    while(this.audio.firstChild) this.audio.removeChild(this.audio.firstChild);
+    this.audio.appendChild(srcEl);
+
+    this.audio.volume = parseFloat(this.$vol.value);
+
+    this.attachAudioEvents();
+    this._wireAudioGraph();
+    this.log(`Audio initialized => ${srcEl.src}`);
+  }
+
+  _wireAudioGraph(){
+    try{
+      this.ctx = getCtx();
+      this.gainNode = this.ctx.createGain();
+      this.gainNode.gain.value = 1.0;
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.sourceNode = this.ctx.createMediaElementSource(this.audio);
+      this.sourceNode.connect(this.gainNode);
+      this.gainNode.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
+      this._startEQ();
+    }catch(e){ this.log('WebAudio unavailable (EQ disabled).'); }
+  }
+
+  _disconnectGraph(){
+    try{
+      if (this.sourceNode){ this.sourceNode.disconnect(); this.sourceNode = null; }
+      if (this.gainNode){ this.gainNode.disconnect(); this.gainNode = null; }
+      if (this.analyser){ this.analyser.disconnect(); this.analyser = null; }
+    }catch{}
+    this._stopEQ();
+  }
+
+  _startEQ(){
+    if(!this.analyser) return;
+    const bars = Array.from(this.$eq.querySelectorAll('.bar'));
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+    const draw = ()=>{
+      if(!this.analyser) return;
+      this.analyser.getByteFrequencyData(data);
+      const step = Math.floor(data.length / bars.length) || 1;
+      for(let i=0;i<bars.length;i++){
+        const v = data[i*step] / 255; // 0..1
+        bars[i].style.height = Math.max(3, Math.round(v*28)) + 'px';
+      }
+      this.eqRAF = requestAnimationFrame(draw);
+    };
+    cancelAnimationFrame(this.eqRAF);
+    this.eqRAF = requestAnimationFrame(draw);
+  }
+  _stopEQ(){ if (this.eqRAF) cancelAnimationFrame(this.eqRAF); this.eqRAF=null; }
+
+attachAudioEvents(){
+  const a = this.audio;
+
+  // ✅ Known metadata feeds for your real stations
+  const STATION_METADATA_FEEDS = {
+    "big985": "https://api.tunein.com/profiles/s33965/nowPlaying",     // Big 98.5 FM
+    "classicrock965": "https://api.tunein.com/profiles/s32491/nowPlaying", // Classic Rock 96.5
+    "k953": "https://api.tunein.com/profiles/s34523/nowPlaying"        // K95 95.3 FM
+  };
+
+  // 🧹 Clean junk / call signs from metadata
+  const sanitizeTitle = (t)=>{
+    if(!t) return null;
+    t = t.replace(/\u0000/g,'').trim();
+    if(!t || t.length < 3) return null;
+    if(/ktil|wrxl|amperwave|big985|audacy|unknown|listen/i.test(t)) return null;
+    return t;
+  };
+
+  // 🕒 Periodic metadata polling (15s)
+  const pollMetadata = ()=>{
+    const feed = STATION_METADATA_FEEDS[this.station.id];
+    if(!feed) return; // Classic Rock 96.5 uses ICY, handled below
+
+    fetch(feed)
+      .then(r=>r.json())
+      .then(data=>{
+        const meta = sanitizeTitle(
+          data?.Header?.Title ||
+          data?.song ||
+          data?.title ||
+          data?.current_track ||
+          data?.NowPlaying ||
+          ""
+        );
+        if(meta && meta !== this._lastMeta){
+          this._lastMeta = meta;
+          updateNowPlayingFromMetadata(meta, this.station.id);
+        }
+      })
+      .catch(()=>{ /* ignore */ });
+  };
+  setInterval(pollMetadata,15000);
+
+  // 🎶 Metadata from stream (ICY/Shoutcast)
+  a.addEventListener("loadedmetadata", () => {
+    try {
+      const raw = a.getAttribute("title") || this.station.name;
+      const clean = sanitizeTitle(raw);
+      if(clean){
+        updateNowPlayingFromMetadata(clean, this.station.id);
+        this._lastMeta = clean;
+      } else {
+        // If junk like KTIL, trigger external feed instead
+        pollMetadata();
+      }
+    } catch(e){
+      console.warn("Metadata parse failed:", e);
+    }
+  });
+
+  // 🎧 Normal audio lifecycle handlers
+  a.addEventListener('play', ()=>{
+    this.setPill('Playing','ok');
+    this.$play.textContent = '⏸ Pause';
+    this.isUserPaused = false;
+    this._startWatchdog();
+    this._setWarmup(6000);
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = a.currentTime || 0;
+    bindMini(this);
+    persistLast(this.station.id);
+    this._startUptime();
+    enableAudDRecognition(this);
+  });
+
+  a.addEventListener('pause', ()=>{
+    this.setPill('Paused','warn');
+    this.$play.textContent = '▶ Play';
+    this.isUserPaused = true;
+    this._clearReconnectTimeout();
+    this._stopWatchdog();
+    this._stopCountdown();
+    this._stopUptime();
+    this.attempt = 0;
+    disableAudDRecognition(this);
+  });
+
+  a.addEventListener('timeupdate', ()=>{
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = a.currentTime || 0;
+  });
+
+  a.addEventListener('canplay', ()=>{
+    this._lastTimeUpdate = performance.now();
+    this.audio.play().catch(()=>{});
+  });
+
+  a.addEventListener('ended', ()=> this.log('ended signaled on live stream; watchdog will decide.'));
+  a.addEventListener('error', ()=> this._scheduleReconnect(true));
+}
+
+
+
+  /* ---------- Countdown / uptime ---------- */
+  _startCountdown(totalMs, labelPrefix="Reconnecting in"){
+    this._stopCountdown();
+    this._countdownUntil = Date.now() + totalMs;
+    const tick = ()=>{
+      const msLeft = this._countdownUntil - Date.now();
+      const s = Math.max(0, Math.ceil(msLeft/1000));
+      setText(this.$nx, s ? `${labelPrefix} ${s}s` : 'Now');
+      if (msLeft <= 0){ this.setPill(`${labelPrefix} 0s…`,'warn'); this._stopCountdown(); return; }
+    };
+    tick();
+    this._countdownTimer = setInterval(tick, 250);
+  }
+  _stopCountdown(){ if (this._countdownTimer) clearInterval(this._countdownTimer); this._countdownTimer = null; setText(this.$nx,'—'); }
+
+  _startUptime(){
+    this._startedAt = Date.now();
+    const fmt = (sec)=>{
+      const m = Math.floor(sec/60), s = Math.floor(sec%60);
+      const h = Math.floor(m/60); const mm = (m%60).toString().padStart(2,'0');
+      const ss = s.toString().padStart(2,'0');
+      return h? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+    };
+    const tick=()=>{ const sec=(Date.now()-this._startedAt)/1000; setText(this.$uptime, fmt(sec)); };
+    tick();
+    clearInterval(this._uptimeTimer);
+    this._uptimeTimer = setInterval(tick, 1000);
+  }
+  _stopUptime(){ clearInterval(this._uptimeTimer); this._uptimeTimer=null; setText(this.$uptime,'00:00'); }
+
+  /* ---------- Warmup/Watchdog ---------- */
+  _setWarmup(ms){ this._warmupUntil = Date.now() + ms; }
+  _inWarmup(){ return Date.now() < this._warmupUntil; }
+
+  _startWatchdog(){
+    this._stopWatchdog();
+    this._lastTimeUpdate = performance.now();
+    this._lastCt = this.audio?.currentTime || 0;
+    this._watchdogTimer = setInterval(()=>{
+      if (!this.audio || this.audio.paused) return;
+      if (this._inWarmup()) return;
+      if (this._inReconnect) return;
+
+      const now = performance.now();
+      const ct = this.audio.currentTime || 0;
+      const ctAdvanced = ct > this._lastCt + 0.1;
+      const rs = this.audio.readyState; // 0–4
+      const noProgressSecs = (now - this._lastTimeUpdate)/1000;
+
+      if (ctAdvanced || rs >= HTMLMediaElement.HAVE_FUTURE_DATA){
+        this._lastTimeUpdate = now; this._lastCt = ct; return;
+      }
+      if (noProgressSecs >= this.watchdogSecs){
+        this.setErr('E006', `no progress ${Math.round(noProgressSecs)}s, rs=${rs}`);
+        this._scheduleReconnect();
+      }
+    }, 1000);
+  }
+  _stopWatchdog(){ if (this._watchdogTimer) clearInterval(this._watchdogTimer); this._watchdogTimer = null; }
+
+  /* ---------- Endpoint Rotation ---------- */
+  _currentUrl(){ return this.endpoints[this.endpointIndex] || this.station.src; }
+  _rotateEndpoint(){
+    this.endpointIndex = (this.endpointIndex + 1) % this.endpoints.length;
+    this._updateEndpointBadge();
+    this.log(`Rotated endpoint -> ${this._currentUrl()}`);
+  }
+
+  /* ---------- Controls ---------- */
+  async safePlay(){
+    try{
+      await resumeCtxIfSuspended();
+      await this._softRefreshAndPlay();
+    }catch(e){
+      this.setErr('E001', e?.name || 'NotAllowedError');
+      this.setPill('User action needed','bad');
+    }
+  }
+  pause(){
+    if (!this.audio) return;
+    this.audio.pause();
+    // timers cleared in 'pause' event + extra safety here
+    this._clearReconnectTimeout();
+  }
+  stop(){
+    if (!this.audio) return;
+    this.pause();
+    try{
+      this.audio.src = "";
+      this.audio.load();
+    }catch{}
+    this._stopCountdown();
+    this._stopUptime();
+    this._stopWatchdog();
+    this._clearReconnectTimeout();
+    this._disconnectGraph();
+    this.setPill('Stopped');
+    this.log('Stopped.');
+    unbindMini(this);
+    this.attempt = 0;
+  }
+
+  async _softRefreshAndPlay(){
+    const prevVol = this.audio ? this.audio.volume : parseFloat(this.$vol.value);
+
+    // soft fade out
+    if (this.gainNode && this.ctx){
+      try{
+        this.gainNode.gain.cancelScheduledValues(this.ctx.currentTime);
+        this.gainNode.gain.linearRampToValueAtTime(0.0, this.ctx.currentTime + 0.12);
+      }catch{}
+    }
+
+    // Fully reset element + graph
+    if (this.audio){ try{ this.audio.pause(); this.audio.src=""; this.audio.load(); }catch{} }
+    this._disconnectGraph();
+    this.initAudio();
+
+    // fade back in
+    if (this.gainNode && this.ctx){
+      try{
+        this.gainNode.gain.setValueAtTime(0.0, this.ctx.currentTime);
+        this.gainNode.gain.linearRampToValueAtTime(prevVol, this.ctx.currentTime + 0.20);
+      }catch{}
+    }
+    if (this.audio) this.audio.volume = prevVol;
+
+    await this.audio.play();
+    a.addEventListener('play', ()=>{
+  // 🔊 Force resume AudioContext and reconnect if needed
+  try {
+    if (this.ctx && this.ctx.state !== "running") {
+      this.ctx.resume().then(() => {
+        this._disconnectGraph();
+        this._wireAudioGraph();
+      });
+    }
+  } catch(e) {
+    this.log("Context resume failed: " + e.message);
+  }
+  // 🔊 Ensure AudioContext is active and connected
+  try {
+    if (this.ctx && this.ctx.state !== "running") {
+      this.ctx.resume().then(() => {
+        this._disconnectGraph();
+        this._wireAudioGraph();
+      });
+    }
+  } catch (err) {
+    this.log("Context resume failed: " + err.message);
+  }
+
+  this.setPill('Playing','ok');
+  this.$play.textContent = '⏸ Pause';
+  this.isUserPaused = false;
+  this._startWatchdog();
+  this._setWarmup(6000);
+  this._lastTimeUpdate = performance.now();
+  this._lastCt = a.currentTime || 0;
+  bindMini(this);
+  persistLast(this.station.id);
+  this._startUptime();
+  if ('mediaSession' in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({ title: this.station.name, artist: 'Live Radio', album: 'Stream', artwork: [] });
+    navigator.mediaSession.setActionHandler('play', ()=>this.safePlay());
+    navigator.mediaSession.setActionHandler('pause', ()=>this.pause());
+    navigator.mediaSession.setActionHandler('stop', ()=>this.stop());
+  }
+});
+
+    this.setPill('Playing','ok');
+    this.$play.textContent = '⏸ Pause';
+    this.isUserPaused = false;
+    this._startWatchdog();
+    this._setWarmup(6000);
+    this.log('Play (fresh stream, soft fade).');
+  }
+
+  _clearReconnectTimeout(){
+    if (this._reconnectTimeoutId){
+      clearTimeout(this._reconnectTimeoutId);
+      this._reconnectTimeoutId = null;
+    }
+  }
+
+  _scheduleReconnect(fromError=false){
+    if (!this.audio || this.isUserPaused) return;
+    if (this._inReconnect) return;
+    if (this._reconnectTimeoutId) return;
+
+    const exp = Math.min(this.attempt, this.maxExp);
+    const base = Math.pow(2, exp);
+    const jitter = Math.random()*0.3 + 0.85;
+    const delay = Math.round(base*jitter);
+    this.attempt++;
+
+    if (fromError && this.attempt % 2 === 0 && this.endpoints.length > 1){
+      this._rotateEndpoint();
+    }
+
+    if (this.attempt > this.maxExp + 3){
+      if (this.attempt === this.maxExp + 4) this.setErr('E008');
+      const LOOP_MS = 30000;
+      this._startCountdown(LOOP_MS, "Reconnecting in");
+      this._reconnectTimeoutId = setTimeout(()=>{
+        this._reconnectTimeoutId = null;
+        this._reconnectNow(false);
+      }, LOOP_MS);
+      return;
+    }
+
+    const ms = delay*1000;
+    this._startCountdown(ms, "Reconnecting in");
+    this.log(`Reconnect scheduled (attempt ${this.attempt}, ${delay}s).`);
+    this._reconnectTimeoutId = setTimeout(()=>{
+      this._reconnectTimeoutId = null;
+      this._reconnectNow(false);
+    }, ms);
+  }
+
+  async _reconnectNow(manual=false){
+    if (!this.audio || this.isUserPaused) return;
+    if (this._inReconnect) return;
+    this._inReconnect = true;
+
+    try{
+      this._stopCountdown();
+      await resumeCtxIfSuspended();
+      await this._softRefreshAndPlay();
+      this.setPill('Playing','ok');
+      this.attempt = 0;
+      this._setWarmup(6000);
+      this._lastTimeUpdate = performance.now();
+      this._lastCt = this.audio.currentTime || 0;
+      this.log(`${manual ? 'Manual' : 'Auto'} reconnect successful.`);
+    }catch(e){
+      if (e?.name === 'NotAllowedError'){
+        this.setErr('E001','user action required');
+        this.setPill('Tap Play','bad');
+      }else{
+        if (this.endpoints.length>1){ this._rotateEndpoint(); } else { this.setErr('E011'); }
+        this.setErr('E010', e?.message || 'play() failed');
+        this._scheduleReconnect(true);
+      }
+    }finally{
+      this._inReconnect = false;
+    }
+  }
+
+  /* ---------- Bindings ---------- */
+  bind(){
+    this.$play.addEventListener('click', ()=> {
+      if (this.audio && !this.audio.paused) this.pause(); else this.safePlay();
+    });
+    this.$reconnect.addEventListener('click', ()=>{ this.setErr('E009'); this._reconnectNow(true); });
+    this.$stop.addEventListener('click', ()=>this.stop());
+    this.$vol.addEventListener('input', ()=>{ if (this.audio) this.audio.volume = parseFloat(this.$vol.value); saveVolume(parseFloat(this.$vol.value)); if (miniBinding.player===this) miniVol.value=this.$vol.value; });
+
+    // favorite
+    this.$fav.addEventListener('click', ()=>{
+      const on = this.$fav.getAttribute('aria-pressed') === 'true';
+      const next = !on;
+      this.$fav.setAttribute('aria-pressed', String(next));
+      if (next) favorites.add(this.station.id); else favorites.delete(this.station.id);
+      saveFavorites(favorites);
+      toast(next ? `★ Added to favorites: ${this.station.name}` : `☆ Removed: ${this.station.name}`);
+      if (showingFavoritesOnly) render();
+    });
+
+    // edit
+    this.$edit.addEventListener('click', ()=> openStationDialog(this.station));
+
+    // endpoint badge init
+    this._updateEndpointBadge();
+  }
+
+  /* ---------- Destruction ---------- */
+  destroy(){
+    // Stop playback & timers, disconnect graph, remove DOM listeners handled via GC
+    try{ this.stop(); }catch{}
+    this._stopEQ();
+    this._disconnectGraph();
+    // best-effort: remove any references
+    this.mount.replaceChildren();
+  }
+}
+
+/* ==============================
+   App Wiring
+============================== */
+let players = [];
+let focusedPlayer = null;
+
+function onPlayerFocused(p){ focusedPlayer = p; }
+
+// Clean up previous players to avoid leaks, then render fresh
+function render(){
+  // DESTROY old
+  if (players && players.length){
+    for (const p of players){
+      try{ p.destroy(); }catch{}
+    }
+  }
+
+  const q = (search.value||'').toLowerCase();
+  const sts = allStations().filter(s=>{
+    const hit = s.name.toLowerCase().includes(q) || (s.logo||'').toLowerCase().includes(q);
+    const favHit = !showingFavoritesOnly || favorites.has(s.id);
+    return hit && favHit;
+  });
+
+  grid.innerHTML = '';
+  players = sts.map(st=>{
+    const host = document.createElement('div'); grid.appendChild(host);
+    return new RadioPlayer(st, host, onPlayerFocused);
+  });
+
+  if (players.length===0){
+    const empty = document.createElement('div');
+    empty.className='card';
+    empty.innerHTML = `<div class="title">No stations found</div><div class="hint">Try clearing the search or add a new station.</div>`;
+    grid.appendChild(empty);
+  }
+}
+
+function stopAll(){ players.forEach(p=>p.stop()); }
+function muteAll(){ players.forEach(p=>{ if (p.audio) p.audio.muted = true; }); toast('All stations muted'); }
+function loadVolume(){ return parseFloat(localStorage.getItem(LS.VOLUME) || '0.7'); }
+function saveVolume(v){ localStorage.setItem(LS.VOLUME, String(v)); }
+function persistLast(id){ localStorage.setItem(LS.LAST, JSON.stringify({id})); }
+
+/* ==============================
+   Mini Player Binding
+============================== */
+const miniBinding = { player: null };
+function bindMini(player){
+  mini.hidden = false;
+  miniBinding.player = player;
+  setText(miniName, player.station.name);
+  setText(miniPill, 'Playing'); miniPill.className='pill ok';
+  miniVol.value = player.$vol.value;
+}
+function unbindMini(player){
+  if (miniBinding.player !== player) return;
+  miniBinding.player = null;
+  mini.hidden = true;
+}
+miniPlay.addEventListener('click', ()=>{
+  const p = miniBinding.player; if (!p) return;
+  if (p.audio && !p.audio.paused) p.pause(); else p.safePlay();
+});
+miniStop.addEventListener('click', ()=>{ const p=miniBinding.player; if (p) p.stop(); });
+miniVol.addEventListener('input', ()=>{
+  const p = miniBinding.player; if (!p) return;
+  p.$vol.value = miniVol.value; if (p.audio) p.audio.volume = parseFloat(miniVol.value); saveVolume(parseFloat(miniVol.value));
+});
+
+/* ==============================
+   Station CRUD + Import/Export
+============================== */
+const stationDialog = document.getElementById('stationDialog');
+const dialogTitle = document.getElementById('dialogTitle');
+const stName = document.getElementById('stName');
+const stUrl = document.getElementById('stUrl');
+const stFallbacks = document.getElementById('stFallbacks');
+const stLogo = document.getElementById('stLogo');
+const stMime = document.getElementById('stMime');
+const stWatchdog = document.getElementById('stWatchdog');
+const stMaxExp = document.getElementById('stMaxExp');
+const saveStationBtn = document.getElementById('saveStation');
+const cancelDialogBtn = document.getElementById('cancelDialog');
+const deleteStationBtn = document.getElementById('deleteStation');
+
+let editingStationId = null;
+
+function openStationDialog(st=null){
+  dialogTitle.textContent = st ? 'Edit Station' : 'Add Station';
+  stName.value = st?.name || '';
+  stUrl.value = st?.src || '';
+  stFallbacks.value = (st?.fallbacks||[]).join(',');
+  stLogo.value = st?.logo || '';
+  stMime.value = st?.mime || '';
+  stWatchdog.value = st?.watchdog || 20;
+  stMaxExp.value = st?.maxExp || 4;
+  editingStationId = st?.id || null;
+  deleteStationBtn.hidden = !st;
+  stationDialog.showModal();
+}
+function closeStationDialog(){ stationDialog.close(); }
+
+saveStationBtn.addEventListener('click', (ev)=>{
+  ev.preventDefault();
+  const name = stName.value.trim();
+  const src = stUrl.value.trim();
+  if (!name || !src){ toast('Please fill in name and URL'); return; }
+
+  // minimal URL sanity
+  try { new URL(src); } catch { toast('Invalid URL'); return; }
+
+  const logo = stLogo.value.trim();
+  const mime = stMime.value || undefined;
+  const fallbacks = stFallbacks.value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6).filter(u=>{ try{ new URL(u); return true; }catch{ return false; }});
+  const watchdog = Math.max(6, Math.min(120, Number(stWatchdog.value)||20));
+  const maxExp = Math.max(2, Math.min(6, Number(stMaxExp.value)||4));
+
+  if (editingStationId){
+    const idx = userStations.findIndex(s=>s.id===editingStationId);
+    const rec = { id: editingStationId, name, src, logo, mime, fallbacks, watchdog, maxExp };
+    if (idx>=0) userStations[idx]=rec; else userStations.push(rec);
+    saveUserStations(userStations);
+    toast('Station updated');
+  }else{
+    const id = nextIdFromName(name);
+    userStations.push({ id, name, src, logo, mime, fallbacks, watchdog, maxExp });
+    saveUserStations(userStations);
+    toast('Station added');
+  }
+  closeStationDialog(); render();
+});
+cancelDialogBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeStationDialog(); });
+deleteStationBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  if (!editingStationId) return;
+  userStations = userStations.filter(s=>s.id!==editingStationId);
+  saveUserStations(userStations);
+  favorites.delete(editingStationId); saveFavorites(favorites);
+  toast('Station deleted');
+  closeStationDialog(); render();
+});
+
+exportBtn.addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(userStations,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'stations.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+importBtn.addEventListener('click', ()=> importFile.click());
+importFile.addEventListener('change', ()=>{
+  const f = importFile.files?.[0]; if (!f) return;
+  if (f.size > 512 * 1024){ toast('Import too large (max 512KB)'); return; }
+  const fr = new FileReader();
+  fr.onload = ()=> {
+    try {
+      const arr = JSON.parse(fr.result);
+      if (!Array.isArray(arr)) throw new Error('Invalid JSON');
+      const cleaned = arr.filter(validateStation).slice(0, 300);
+      // de-dupe by id (user overrides)
+      const map = new Map(userStations.map(s=>[s.id,s]));
+      for (const s of cleaned) map.set(s.id, s);
+      userStations = [...map.values()];
+      saveUserStations(userStations);
+      toast(`Imported ${cleaned.length} stations`);
+      render();
+    } catch(e){ toast('Import failed: ' + e.message); }
+  };
+  fr.readAsText(f);
+});
+
+/* ==============================
+   Global Controls & UX
+============================== */
+const favoritesOnly = ()=> {
+  showingFavoritesOnly = !showingFavoritesOnly;
+  localStorage.setItem(LS.SHOW_FAV_ONLY, String(showingFavoritesOnly)); // v2.2.0 persist
+  favOnlyBtn.classList.toggle('warn', showingFavoritesOnly);
+  favOnlyBtn.classList.add('btn');
+  favOnlyBtn.textContent = showingFavoritesOnly ? '★ Favorites (On)' : '★ Favorites';
+  render();
+};
+
+
+toggleThemeBtn.addEventListener('click', toggleTheme);
+stopAllBtn.addEventListener('click', stopAll);
+muteAllBtn.addEventListener('click', muteAll);
+favOnlyBtn.addEventListener('click', favoritesOnly);
+addStationBtn.addEventListener('click', ()=> openStationDialog());
+
+search.addEventListener('input', render);
+document.addEventListener('keydown', (e)=>{
+  if (e.key === '/' && document.activeElement !== search){ e.preventDefault(); search.focus(); return; }
+  if (e.key.toLowerCase() === 's'){ e.preventDefault(); stopAll(); return; }
+  if (e.key.toLowerCase() === 'm'){ e.preventDefault(); muteAll(); return; }
+  if (e.code === 'Space'){
+    if (document.activeElement && document.activeElement.closest('.card')){
+      e.preventDefault();
+      const p = players.find(pl => pl.mount === document.activeElement.closest('.card'));
+      if (p) { if (p.audio && !p.audio.paused) p.pause(); else p.safePlay(); }
+    }
+  }
+});
+
+/* Resume last played after first render */
+function tryResumeLastOnLoad(){
+  const lastRaw = localStorage.getItem(LS.LAST);
+  if (!lastRaw) return;
+  setTimeout(()=>{
+    try {
+      const last = JSON.parse(lastRaw);
+      const p = players.find(x=>x.station.id===last.id);
+      if (p) p.safePlay();
+    } catch {}
+  }, 500);
+}
+
+/* Network hints */
+window.addEventListener('online', ()=>{ players.forEach(p=>p.log('Network: online')); toast('Network: online'); });
+window.addEventListener('offline', ()=>{ players.forEach(p=>p.log('Network: offline')); toast('Network: offline'); });
+
+/* Volume default */
+miniVol.value = loadVolume();
+
+/* Initialization */
+/* Initialization */
+applyDeviceDataAttr?.(); // if you added device detection; otherwise ignore
+
+applyDeviceDataAttr();     // NEW (v2.2.0)
+loadTheme();
+render();
+
+
+// Restore ★ favorites filter state **before** first render
+showingFavoritesOnly = localStorage.getItem(LS.SHOW_FAV_ONLY) === 'true';
+if (showingFavoritesOnly) {
+  favOnlyBtn.classList.add('warn','btn');
+  favOnlyBtn.textContent = '★ Favorites (On)';
+}
+
+render();
+
+// Deep-link (if you added it); else keep your original resume
+if (!tryDeepLinkAutoplay?.()) {
+  tryResumeLastOnLoad();
+}
+
+
+/* ==============================
+   Utility: Media Session (global)
+============================== */
+if ('mediaSession' in navigator){
+  try{
+    navigator.mediaSession.setActionHandler('previoustrack', null);
+    navigator.mediaSession.setActionHandler('nexttrack', null);
+    navigator.mediaSession.setActionHandler('seekto', null);
+  }catch{}
+}
+
+/* ===== Changelog / Patch Notes ===== */
+const PATCH_NOTES = [
+  {
+    version: '2.3.0',
+    date: '2025-12-01',
+    highlights: [
+      '🎄 Christmas Update Released!',
+      'Added snow background with 10 randomized flakes.',
+      'Added falling emoji Christmas decorations (🎄 ⭐ 🎁 ❄️ 🔔).',
+      'Added animated ribbon accent at the top of the page.',
+      'Added sparkle & pine-branch holiday overlay.',
+      'Added full automatic Christmas color theme (reds / greens / icy blues).',
+      'Added holiday login page gradient makeover.',
+      'Improved performance of snow and visual layers (GPU-friendly).',
+      'No UI or layout changes — fully cosmetic holiday mode.'
+    ],
+    fixes: [
+      'Optimized background layers so login dialog stays crisp.',
+      'Improved layering order so snow never blocks UI clicks.',
+      'Fixed rare issue where holiday overlays loaded twice.'
+    ]
+  },
+
+  // Keep your older patch notes below
+  {
+    version: '2.2.3',
+    date: '2025-10-17',
+    highlights: [
+      'Removed buffering behavior and indicators.',
+      'Improved continuous playback with fewer interruptions.'
+    ],
+    fixes: [
+      'Minor internal cleanup around audio event handlers.'
+    ]
+  },
+];
+
+
+
+  // Keep older entries below
+  
+
+
+// Elements
+const showChangelogBtn = document.getElementById('showChangelog');
+const changelogDialog = document.getElementById('changelogDialog');
+const changelogBody = document.getElementById('changelogBody');
+const showOnStartup = document.getElementById('showOnStartup');
+
+function renderPatchNotes() {
+  // build HTML safely
+  const parts = PATCH_NOTES.map(entry => {
+    const hl = entry.highlights.map(i => `• ${i}`).join('\n');
+    const fx = (entry.fixes && entry.fixes.length) ? '\n\nFixes:\n' + entry.fixes.map(i => `• ${i}`).join('\n') : '';
+    return `v${entry.version} — ${entry.date}\n${'―'.repeat(24)}\n${hl}${fx}`;
+  });
+  changelogBody.textContent = parts.join('\n\n');
+}
+
+function openChangelog(manual = false) {
+  renderPatchNotes();
+  // checkbox reflects preference
+  showOnStartup.checked = localStorage.getItem(LS.SHOW_CHANGELOG) === 'true';
+  changelogDialog.showModal();
+  // mark current version as seen if opened manually or on auto-show
+  localStorage.setItem(LS.LAST_SEEN_VER, APP_VERSION);
+}
+
+function maybeAutoShowChangelog() {
+  const lastSeen = localStorage.getItem(LS.LAST_SEEN_VER) || '';
+  const wantsAuto = localStorage.getItem(LS.SHOW_CHANGELOG) === 'true';
+  if (wantsAuto && lastSeen !== APP_VERSION) {
+    // Open slightly after first render so layout is ready
+    setTimeout(() => openChangelog(false), 300);
+  }
+}
+
+// Events
+if (showChangelogBtn) {
+  showChangelogBtn.addEventListener('click', () => openChangelog(true));
+}
+
+if (showOnStartup) {
+  showOnStartup.addEventListener('change', () => {
+    localStorage.setItem(LS.SHOW_CHANGELOG, String(showOnStartup.checked));
+  });
+}
+
+// Call after your app initializes (e.g., after render(); tryResumeLastOnLoad();)
+maybeAutoShowChangelog();
+
+
+ 
+
+
+/* =============================
+   Route Handler for /terms
+   Redirects or embeds TermsFeed page
+============================= */
+if (window.location.pathname === "/terms") {
+  document.title = "Terms and Conditions — FM Radio Player";
+
+  // Option 1: Embed the TermsFeed live page directly
+  document.body.innerHTML = `
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0a0c10;
+        color: #e9eef3;
+        font-family: "Poppins", system-ui, sans-serif;
+      }
+      iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <iframe src="https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f" title="Terms and Conditions"></iframe>
+  `;
+
+  // Option 2 (if you prefer redirect instead of embed)
+  // window.location.href = "https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f";
+}
+
+    /* ============================
+   🎶 Now Playing + Lyrics Integration
+============================ */
+const nowCard = document.getElementById("nowPlayingCard");
+const artImg = document.getElementById("trackArt");
+const tTitle = document.getElementById("trackTitle");
+const tArtist = document.getElementById("trackArtist");
+const tLyrics = document.getElementById("trackLyrics");
+
+// Replace with your Genius API access token
+const GENIUS_TOKEN = "YOUR_GENIUS_API_TOKEN";
+
+async function fetchTrackInfo(query) {
+  try {
+    // Query iTunes for artwork and metadata
+    const iTunesURL = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&entity=song`;
+    const res = await fetch(iTunesURL);
+    const data = await res.json();
+    const track = data.results?.[0];
+    if (track) {
+      artImg.src = track.artworkUrl100?.replace("100x100", "300x300") || "";
+      artImg.style.display = track.artworkUrl100 ? "block" : "none";
+      tTitle.textContent = track.trackName || query;
+      tArtist.textContent = track.artistName || "";
+      nowCard.style.display = "flex";
+      fetchLyrics(`${track.artistName} ${track.trackName}`);
+    } else {
+      nowCard.style.display = "none";
+    }
+  } catch (err) {
+    console.warn("Track info fetch failed", err);
+  }
+}
+
+async function fetchLyrics(query) {
+  try {
+    const apiUrl = `https://api.genius.com/search?q=${encodeURIComponent(query)}`;
+    const res = await fetch(apiUrl, { headers: { Authorization: `Bearer ${GENIUS_TOKEN}` } });
+    const data = await res.json();
+    const song = data.response.hits?.[0]?.result;
+    if (!song) return;
+    const lyricsUrl = song.url;
+    tLyrics.innerHTML = `Lyrics: <a href="${lyricsUrl}" target="_blank" style="color:var(--accent)">View on Genius</a>`;
+  } catch (e) {
+    console.warn("Lyrics fetch failed", e);
+  }
+}
+
+/* Hook into your RadioPlayer to update metadata */
+function updateNowPlayingFromMetadata(metaText) {
+  if (!metaText) return;
+  // Common format: "Artist - Title"
+  const parts = metaText.split(" - ");
+  const artist = parts[0]?.trim();
+  const title = parts.slice(1).join(" - ").trim();
+  if (artist && title) {
+    fetchTrackInfo(`${artist} ${title}`);
+  } else {
+    fetchTrackInfo(metaText);
+  }
+}
+
+
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+      .catch(err => console.warn('⚠️ Service Worker failed:', err));
+  });
+}
+
+/* === AudD Live Stream Recognition (CORS-safe) === */
+/* === AudD Live Stream Recognition (Full + HLS/AAC Support) === */
+const AUDD_API_KEY = "6d0e12b16224b1d6b8ae9a8a560233fc"; // 🔑 replace with your real token
+
+async function recognizeFromStream(player) {
+  if (!player.audio || player.audio.paused) return;
+
+  try {
+    // 1️⃣ Capture 7 seconds from the playing audio
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = ctx.createMediaStreamDestination();
+    const src = ctx.createMediaElementSource(player.audio);
+    src.connect(dest);
+    src.connect(ctx.destination);
+
+    const rec = new MediaRecorder(dest.stream);
+    const chunks = [];
+
+    rec.ondataavailable = e => chunks.push(e.data);
+
+    rec.onstop = async () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const form = new FormData();
+      form.append("api_token", AUDD_API_KEY);
+      form.append("file", blob, "sample.webm");
+      form.append("return", "apple_music,spotify,deezer");
+
+      const res = await fetch("https://api.audd.io/", { method: "POST", body: form });
+      const data = await res.json();
+      console.log("AudD result:", data);
+
+      if (data.status === "success" && data.result) {
+        const { artist, title } = data.result;
+        updateNowPlayingFromMetadata(`${artist} - ${title}`);
+      } else {
+        console.log("🎧 No match:", data.error?.error_message || "none");
+      }
+    };
+
+    rec.start();
+    setTimeout(() => rec.stop(), 7000); // record for 7 seconds
+  } catch (e) {
+    console.warn("Recognition failed:", e);
+  }
+}
+
+function enableAudDRecognition(player) {
+  if (player._audDInterval) clearInterval(player._audDInterval);
+  player._audDInterval = setInterval(() => recognizeFromStream(player), 60000);
+}
+
+function disableAudDRecognition(player) {
+  if (player._audDInterval) {
+    clearInterval(player._audDInterval);
+    player._audDInterval = null;
+  }
+}
+
+
+function enableAudDRecognition(player) {
+  if (!player.station || !player.station.src) return;
+  if (player._audDInterval) clearInterval(player._audDInterval);
+
+  player._audDInterval = setInterval(() => {
+    recognizeFromStream(player.station.src);
+  }, 60000); // every 60s
+}
+
+function disableAudDRecognition(player) {
+  if (player._audDInterval) {
+    clearInterval(player._audDInterval);
+    player._audDInterval = null;
+  }
+}
+
+
+const API_BASE = "https://login-api-iwy1.onrender.com"; // change to your domain when hosted
+
+const loginDialog = document.getElementById("loginDialog");
+const openLogin = document.getElementById("openLogin");
+const loginForm = document.getElementById("loginForm");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const loginStatus = document.getElementById("loginStatus");
+
+const USER_KEY = "fm_user";
+const overlayId = "auth-lock-overlay";
+
+// ==========================
+// 🔒 Require Login Overlay
+// ==========================
+function createAuthOverlay() {
+  if (document.getElementById(overlayId)) return;
+  const overlay = document.createElement("div");
+  overlay.id = overlayId;
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    backdrop-filter:blur(8px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-family:'Poppins',sans-serif;
+    z-index:999999;
+    text-align:center;
+  `;
+  overlay.innerHTML = `
+    <h2 style="margin-bottom:10px;">🔐 Please log in to access FM Radio Player</h2>
+    <button id="unlockLoginBtn" class="btn main" style="padding:10px 20px;">Login</button>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById("unlockLoginBtn").addEventListener("click", () => {
+    loginDialog.showModal();
+  });
+}
+
+function removeAuthOverlay() {
+  const el = document.getElementById(overlayId);
+  if (el) el.remove();
+}
+
+function checkLoginStatus() {
+  const user = localStorage.getItem(USER_KEY);
+  if (!user) {
+    createAuthOverlay();
+    grid.style.display = "none";
+    mini.style.display = "none";
+    return false;
+  }
+  removeAuthOverlay();
+  grid.style.display = "";
+  mini.style.display = "";
+  addLogoutButton();
+  return true;
+}
+
+function addLogoutButton() {
+  if (document.getElementById("logoutBtn")) return;
+  const btn = document.createElement("button");
+  btn.className = "btn small";
+  btn.id = "logoutBtn";
+  btn.textContent = "🚪 Logout";
+  btn.title = "Log out";
+  btn.addEventListener("click", () => {
+    localStorage.removeItem(USER_KEY);
+    toast("You have logged out.");
+    createAuthOverlay();
+    grid.style.display = "none";
+    mini.style.display = "none";
+  });
+  document.querySelector(".toolbar").appendChild(btn);
+}
+
+// Run check on load
+// Always show login overlay immediately, even if logged in earlier
+window.addEventListener("DOMContentLoaded", () => {
+  createAuthOverlay();         // show "You must log in" screen first
+  loginDialog.showModal();     // auto-open the login modal
+  grid.style.display = "none";
+  mini.style.display = "none";
+});
+
+// ==========================
+// Helper: show ban overlay
+// ==========================
+function showBanOverlay() {
+  const overlay = document.createElement("div");
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(6px);
+    z-index:999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+    font-family:'Poppins',sans-serif;
+  `;
+  overlay.innerHTML = `
+    <div style="max-width:480px;padding:30px;background:#17191e;border:1px solid #333;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+      <h2 style="color:#ff5577;margin-bottom:12px;">🚫 You are banned</h2>
+      <p style="color:#ccc;margin-bottom:10px;">If you think this was a mistake, email:</p>
+      <p><a href="mailto:rdsknsfan@gmail.com" style="color:#00c6ff;text-decoration:none;">rdsknsfan@gmail.com</a></p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// ==========================
+// Handle login submit
+// ==========================
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Logging in...";
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.detail || "Login failed");
+
+    if (data.banned) {
+      showBanOverlay();
+      loginStatus.textContent = "⛔ You are banned.";
+      return;
+    }
+
+    // ✅ Successful login
+    loginStatus.textContent = data.message;
+    localStorage.setItem(USER_KEY, data.user);
+    loginDialog.close();
+    toast(`👋 Welcome ${data.user}`);
+    removeAuthOverlay();
+    grid.style.display = "";
+    mini.style.display = "";
+    addLogoutButton();
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
+
+// ==========================
+// Handle signup
+// ==========================
+signupBtn.addEventListener("click", async () => {
+  const formData = new FormData(loginForm);
+  loginStatus.textContent = "Creating account...";
+  try {
+    const res = await fetch(`${API_BASE}/signup`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Signup failed");
+    loginStatus.textContent = data.message;
+    toast("✅ Account created!");
+  } catch (err) {
+    loginStatus.textContent = err.message;
+  }
+});
+
+// open login dialog manually
+openLogin.addEventListener("click", () => loginDialog.showModal());
+
+</script>
+
+</body>
+</html>
