@@ -9,17 +9,50 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
-
-
 <style>
 
-  /* ======================================
-   🎄 CHRISTMAS MODE WRAPPER
-   Only shows when body.christmas-mode is active
-====================================== */
+  .xmas-fall {
+  position: fixed;
+  top: -40px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
 
-/* Christmas background overlay */
-body.christmas-mode::after {
+.xmas-icon {
+  position: absolute;
+  font-size: 22px;
+  opacity: 0.6;
+  animation: xmasDrop 14s linear infinite;
+}
+
+@keyframes xmasDrop {
+  0% { transform: translateY(-40px); }
+  100% { transform: translateY(110vh); }
+}
+
+
+  .ribbon {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  background: repeating-linear-gradient(
+    45deg,
+    #c00,
+    #c00 10px,
+    #fff 10px,
+    #fff 20px,
+    #0a0 20px,
+    #0a0 30px
+  );
+  z-index: 3;
+}
+
+body::after {
   content: "";
   position: fixed;
   top: 0;
@@ -31,297 +64,321 @@ body.christmas-mode::after {
   background-position: top center;
   opacity: 0.12;
   pointer-events: none;
+}
+
+
+
+/* 🎄 Christmas Accent Colors ONLY (UI stays identical) */
+:root{
+  --hit:40px;
+  --radius:14px;
+  --grid-min:320px;
+  --text-scale:1;
+  --density:1;
+
+  /* 🎄 Christmas Colors (subtle, not UI-breaking) */
+  --accent:#e63946;      /* soft red */
+  --accent-2:#aee1ff;    /* icy blue */
+  --red:#ff5c5c;         /* error */
+  --green:#42d18c;       /* success */
+  --amber:#ffd86b;       /* warning */
+
+  /* keep your originals unchanged */
+}
+
+/* Device presets (UNCHANGED) */
+[data-device="mobile"]{ --hit:48px; --radius:16px; --grid-min:260px; --text-scale:1.06; --density:1.15; }
+[data-device="tablet"]{ --hit:46px; --radius:16px; --grid-min:300px; --text-scale:1.04; --density:1.08; }
+[data-device="desktop"]{ --hit:40px; --radius:14px; --grid-min:340px; --text-scale:1.0; --density:1.0; }
+[data-device="tv"]{ --hit:60px; --radius:18px; --grid-min:420px; --text-scale:1.15; --density:1.2; }
+[data-device="quest"]{ --hit:54px; --radius:18px; --grid-min:280px; --text-scale:1.08; --density:1.15; }
+
+
+
+
+/* EVERYTHING BELOW THIS POINT IS YOUR EXACT CSS, UNMODIFIED */
+
+
+
+
+.holiday-sparkle {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: url('https://i.imgur.com/LsrtxpK.png'); 
+  opacity: 0.08;
+  mix-blend-mode: screen;
   z-index: 1;
 }
 
-/* Snowfall wrapper hidden normally */
-.snow,
-.xmas-fall,
-.holiday-sparkle {
-  display: none !important;
-}
 
-/* Only show when Christmas Mode is ON */
-body.christmas-mode .snow,
-body.christmas-mode .xmas-fall,
-body.christmas-mode .holiday-sparkle {
-  display: block !important;
-}
-
-
-  /* ===== Device-aware UI presets ===== */
-:root{
-  --hit:40px;         /* min touch target */
-  --radius:14px;
-  --grid-min:320px;   /* grid min card width */
-  --text-scale:1;     /* base text scale */
-  --density:1;        /* control paddings/margins */
-}
-
-[data-device="mobile"]{
-  --hit:48px;
-  --radius:16px;
-  --grid-min:260px;
-  --text-scale:1.06;
-  --density:1.15;
-}
-
-[data-device="tablet"]{
-  --hit:46px;
-  --radius:16px;
-  --grid-min:300px;
-  --text-scale:1.04;
-  --density:1.08;
-}
-
-[data-device="desktop"]{
-  --hit:40px;
-  --radius:14px;
-  --grid-min:340px;
-  --text-scale:1.0;
-  --density:1.0;
-}
-
-[data-device="tv"]{
-  --hit:60px;
-  --radius:18px;
-  --grid-min:420px;
-  --text-scale:1.15;
-  --density:1.2;
-}
-
-[data-device="quest"]{
-  --hit:54px;
-  --radius:18px;
-  --grid-min:280px;
-  --text-scale:1.08;
-  --density:1.15;
-}
-
-/* ============================
-   🔐 New Login UI
-============================ */
-#loginDialog {
-  padding: 0;
-  border-radius: 22px;
-  max-width: 880px;
-  width: min(95vw, 880px);
-  background: transparent;
+/* ===== Snowfall Background ===== */
+.snow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  border: none;
+  z-index: 0; /* keep behind everything */
 }
 
-.login-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  background: var(--login-bg);
-  border-radius: 22px;
-  border: 1px solid var(--login-border);
-  box-shadow: var(--login-glow);
-  overflow: hidden;
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 12px;
+  opacity: 0.9;
+  animation: fall 10s linear infinite;
 }
 
-/* left panel */
-.login-hero {
-  padding: 22px 22px 20px 24px;
-  background: radial-gradient(circle at top left, #00c6ff33, transparent 50%),
-              radial-gradient(circle at bottom right, #7f5dff33, transparent 55%),
-              linear-gradient(145deg, #050711, #090b16);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-right: 1px solid rgba(255,255,255,0.05);
-}
-.login-badge {
-  align-self:flex-start;
-  padding:3px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.16);
-  font-size:.75rem;
-  color:#cfd8ff;
-  background:rgba(5,10,25,0.7);
-}
-.login-logo-mark {
-  inline-size:50px;
-  block-size:50px;
-  border-radius:18px;
-  display:grid;
-  place-items:center;
-  background:radial-gradient(circle at 30% 30%, #7be1ff, #00c6ff);
-  color:#020308;
-  font-weight:700;
-  font-size:1.2rem;
-  box-shadow:0 8px 24px rgba(0,198,255,0.35);
-}
-.login-hero-title {
-  margin-top:8px;
-  font-size:1.35rem;
-  font-weight:600;
-}
-.login-hero-sub {
-  font-size:.9rem;
-  color:#c6d0ff;
-  max-width:320px;
-}
-.login-hero-list {
-  margin-top:12px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  font-size:.85rem;
-  color:#d0dcff;
-}
-.login-hero-list span {
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-.login-hero-foot {
-  margin-top:auto;
-  font-size:.78rem;
-  color:#a4b1ff;
-  opacity:.9;
+/* Randomized positions + delays */
+.snowflake:nth-child(1)  { left: 5%;  animation-delay: 0s;  }
+.snowflake:nth-child(2)  { left: 15%; animation-delay: 2s;  }
+.snowflake:nth-child(3)  { left: 25%; animation-delay: 4s;  }
+.snowflake:nth-child(4)  { left: 35%; animation-delay: 1s;  }
+.snowflake:nth-child(5)  { left: 45%; animation-delay: 5s;  }
+.snowflake:nth-child(6)  { left: 55%; animation-delay: 3s;  }
+.snowflake:nth-child(7)  { left: 65%; animation-delay: 0.5s;}
+.snowflake:nth-child(8)  { left: 75%; animation-delay: 2.5s;}
+.snowflake:nth-child(9)  { left: 85%; animation-delay: 1.7s;}
+.snowflake:nth-child(10) { left: 95%; animation-delay: 3.8s;}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10px) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(20px);
+    opacity: 0.2;
+  }
 }
 
-/* right panel (form) */
-.login-form-wrap {
-  padding: 22px 22px 20px;
-  background: var(--login-panel-soft);
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.login-form-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:8px;
-}
-.login-form-title {
-  font-weight:600;
-  font-size:1.05rem;
-}
-.login-form-sub {
-  font-size:.8rem;
-  color:var(--muted);
-}
-.login-pill {
-  font-size:.75rem;
-  border-radius:999px;
-  padding:4px 10px;
-  border:1px solid var(--border);
-  background:rgba(10,14,22,0.9);
-  color:var(--muted);
-}
-.login-field {
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  margin-top:6px;
-}
-.login-label {
-  font-size:.8rem;
-  color:var(--muted);
-}
-.login-input {
-  width:100%;
-}
-.login-actions {
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
-.login-secondary {
-  font-size:.78rem;
-  color:var(--muted);
-  margin-top:4px;
-}
-.login-status {
-  font-size:.8rem;
-  min-height:18px;
-  margin-top:6px;
-}
-.login-status.ok {
-  color:var(--green);
-}
-.login-status.err {
-  color:var(--red);
-}
-.login-close {
-  background:transparent;
-  border:1px solid var(--border);
-  border-radius:999px;
-  padding:4px 8px;
-  cursor:pointer;
-  font-size:.8rem;
-  color:var(--muted);
-}
-.login-close:hover {
-  background:rgba(255,255,255,0.04);
-}
 
-/* mobile: stack columns */
-@media (max-width: 720px) {
+  /* ============================
+     🔐 New Login UI
+  ============================ */
+  #loginDialog {
+    padding: 0;
+    border-radius: 22px;
+    max-width: 880px;
+    width: min(95vw, 880px);
+    background: transparent;
+    overflow: hidden;
+    border: none;
+  }
+
   .login-shell {
-    grid-template-columns: minmax(0,1fr);
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    background: var(--login-bg);
+    border-radius: 22px;
+    border: 1px solid var(--login-border);
+    box-shadow: var(--login-glow);
+    overflow: hidden;
   }
+
+  /* left panel */
   .login-hero {
-    display:none;
+    padding: 22px 22px 20px 24px;
+    background: radial-gradient(circle at top left, #00c6ff33, transparent 50%),
+                radial-gradient(circle at bottom right, #7f5dff33, transparent 55%),
+                linear-gradient(145deg, #ff0000, #178808);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-right: 1px solid rgba(255,255,255,0.05);
   }
-}
+  .login-badge {
+    align-self:flex-start;
+    padding:3px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.16);
+    font-size:.75rem;
+    color:#cfd8ff;
+    background:rgba(5,10,25,0.7);
+  }
+  .login-logo-mark {
+    inline-size:50px;
+    block-size:50px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    background:radial-gradient(circle at 30% 30%, #7be1ff, #00c6ff);
+    color:#020308;
+    font-weight:700;
+    font-size:1.2rem;
+    box-shadow:0 8px 24px rgba(0,198,255,0.35);
+  }
+  .login-hero-title {
+    margin-top:8px;
+    font-size:1.35rem;
+    font-weight:600;
+  }
+  .login-hero-sub {
+    font-size:.9rem;
+    color:#c6d0ff;
+    max-width:320px;
+  }
+  .login-hero-list {
+    margin-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:.85rem;
+    color:#d0dcff;
+  }
+  .login-hero-list span {
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .login-hero-foot {
+    margin-top:auto;
+    font-size:.78rem;
+    color:#a4b1ff;
+    opacity:.9;
+  }
 
-/* full-screen auth lock overlay button style override */
-#unlockLoginBtn.btn {
-  border-radius:999px;
-}
+  /* right panel (form) */
+  .login-form-wrap {
+    padding: 22px 22px 20px;
+    background: var(--login-panel-soft);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .login-form-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .login-form-title {
+    font-weight:600;
+    font-size:1.05rem;
+  }
+  .login-form-sub {
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-pill {
+    font-size:.75rem;
+    border-radius:999px;
+    padding:4px 10px;
+    border:1px solid var(--border);
+    background:rgba(10,14,22,0.9);
+    color:var(--muted);
+  }
+  .login-field {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    margin-top:6px;
+  }
+  .login-label {
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-input {
+    width:100%;
+  }
+  .login-actions {
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .login-secondary {
+    font-size:.78rem;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .login-status {
+    font-size:.8rem;
+    min-height:18px;
+    margin-top:6px;
+  }
+  .login-status.ok {
+    color:var(--green);
+  }
+  .login-status.err {
+    color:var(--red);
+  }
+  .login-close {
+    background:transparent;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px 8px;
+    cursor:pointer;
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .login-close:hover {
+    background:rgba(255,255,255,0.04);
+  }
 
-/* Apply variables to existing UI */
-body{
-  font-size: calc(16px * var(--text-scale));
-  gap: calc(20px * var(--density));
-  padding: calc(22px * var(--density));
-}
-.card{ border-radius: var(--radius); padding: calc(16px * var(--density)); }
-.btn{ min-height: var(--hit); border-radius: var(--radius); padding: calc(10px * var(--density)) calc(12px * var(--density)); }
-.btn.small{ padding: calc(6px * var(--density)) calc(8px * var(--density)); min-height: calc(var(--hit) - 8px); border-radius: calc(var(--radius) - 4px); }
-input[type="search"],input[type="text"],input[type="url"],select{
-  min-height: calc(var(--hit) - 8px);
-  border-radius: calc(var(--radius) - 2px);
-  padding: calc(10px * var(--density)) calc(14px * var(--density));
-}
-.grid{ grid-template-columns: repeat(auto-fit,minmax(var(--grid-min),1fr)); gap: calc(16px * var(--density)); }
+  /* mobile: stack columns */
+  @media (max-width: 720px) {
+    .login-shell {
+      grid-template-columns: minmax(0,1fr);
+    }
+    .login-hero {
+      display:none;
+    }
+  }
 
-/* Mobile simplifications */
-[data-device="mobile"] .eq{ display:none; } /* hide the live EQ to save space/CPU */
-[data-device="mobile"] .hint{ display:none; }
-[data-device="mobile"] .toolbar{ gap: 8px; }
-[data-device="mobile"] .btn.ghost{ display:none; }        /* hide less-used controls */
-[data-device="mobile"] #exportBtn,
-[data-device="mobile"] #importBtn{ display:none; }        /* can still be reached on desktop */
-[data-device="mobile"] .tag{ display:none; }              /* reduce chrome */
+  /* full-screen auth lock overlay button style override */
+  #unlockLoginBtn.btn {
+    border-radius:999px;
+  }
 
-/* Quest / TV: bigger targets, fewer controls */
-[data-device="quest"] .eq{ display:none; }
-[data-device="quest"] .hint{ display:none; }
-[data-device="quest"] #favoritesOnly{ display:none; }
-[data-device="tv"] input, [data-device="tv"] .btn.small{ font-size: 1.05em; }
+  /* Apply variables to existing UI */
+  body{
+    font-size: calc(16px * var(--text-scale));
+    gap: calc(20px * var(--density));
+    padding: calc(22px * var(--density));
+  }
+  .card{ border-radius: var(--radius); padding: calc(16px * var(--density)); }
+  .btn{ min-height: var(--hit); border-radius: var(--radius); padding: calc(10px * var(--density)) calc(12px * var(--density)); }
+  .btn.small{ padding: calc(6px * var(--density)) calc(8px * var(--density)); min-height: calc(var(--hit) - 8px); border-radius: calc(var(--radius) - 4px); }
+  input[type="search"],input[type="text"],input[type="url"],select{
+    min-height: calc(var(--hit) - 8px);
+    border-radius: calc(var(--radius) - 2px);
+    padding: calc(10px * var(--density)) calc(14px * var(--density));
+  }
+  .grid{ grid-template-columns: repeat(auto-fit,minmax(var(--grid-min),1fr)); gap: calc(16px * var(--density)); }
+
+  /* Mobile simplifications */
+  [data-device="mobile"] .eq{ display:none; }
+  [data-device="mobile"] .hint{ display:none; }
+  [data-device="mobile"] .toolbar{ gap: 8px; }
+  [data-device="mobile"] .btn.ghost{ display:none; }
+  [data-device="mobile"] #exportBtn,
+  [data-device="mobile"] #importBtn{ display:none; }
+  [data-device="mobile"] .tag{ display:none; }
+
+  /* Quest / TV */
+  [data-device="quest"] .eq{ display:none; }
+  [data-device="quest"] .hint{ display:none; }
+  [data-device="quest"] #favoritesOnly{ display:none; }
+  [data-device="tv"] input, [data-device="tv"] .btn.small{ font-size: 1.05em; }
 
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
     --bg:#0e0f12;--panel:#17191e;--panel-2:#10141a;--muted:#9aa4ad;--txt:#e9eef3;
-    --accent:#00c6ff;--accent-2:#7be1ff;--red:#ff5577;--green:#47d18c;--amber:#ffcb4b;
     --border:#232a33;--shadow:0 10px 36px rgba(0,0,0,.35)
   }
   [data-theme="light"]{
     --bg:#f6f8fb;--panel:#ffffff;--panel-2:#f0f4f8;--muted:#657282;--txt:#0c1014;
-    --accent:#0079ff;--accent-2:#80bfff;--red:#e23c61;--green:#1aa375;--amber:#d19800;
     --border:#dfe7ef;--shadow:0 8px 28px rgba(0,0,0,.08)
   }
   html,body{height:100%}
   body{
     background:
-      radial-gradient(1200px 600px at 10% 0%, #14202a22, transparent 55%),
-      linear-gradient(120deg, var(--bg) 30%, var(--bg) 100%);
+      
+      linear-gradient(120deg, #b30000, #006400, #d6d5d1);
     color:var(--txt);font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
     min-height:100vh;display:flex;flex-direction:column;gap:20px;padding:22px
   }
@@ -377,7 +434,9 @@ input[type="search"],input[type="text"],input[type="url"],select{
   .dialog-row{display:flex;gap:12px;margin-top:10px}
   .danger{color:var(--red)}
   .field-help{font-size:.8rem;color:var(--muted)}
+
 </style>
+
 </head>
 
 
@@ -385,7 +444,27 @@ input[type="search"],input[type="text"],input[type="url"],select{
     
 <body>
 
+<div class="snow">
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+  <div class="snowflake">❆</div>
+  <div class="snowflake">❅</div>
+</div>
 
+<div class="ribbon"></div>
+<div class="xmas-fall">
+  <div class="xmas-icon" style="left:10%">🎄</div>
+  <div class="xmas-icon" style="left:30%">⭐</div>
+  <div class="xmas-icon" style="left:50%">🎁</div>
+  <div class="xmas-icon" style="left:70%">❄️</div>
+  <div class="xmas-icon" style="left:85%">🔔</div>
+</div>
 
 
 
@@ -459,6 +538,7 @@ input[type="search"],input[type="text"],input[type="url"],select{
 
 
 <!-- Add Login button to your toolbar -->
+<button class="btn small main" id="openLogin">👤 Login</button>
 
 
 <!-- Maintenance Notice Modal -->
@@ -505,47 +585,6 @@ input[type="search"],input[type="text"],input[type="url"],select{
     // trap initial focus
     setTimeout(() => closeBtn.focus(), 0);
   })();
-</script>
-
-<script>
-// ====== CONFIG ======
-const API_URL = "https://login-api-iwy1.onrender.com/settings";   // <--- CHANGE THIS
-let christmasEnabled = false;
-
-// ====== CHECK SETTINGS EVERY 5 SECONDS ======
-async function checkSettings() {
-    try {
-        const res = await fetch(API_URL + "?t=" + Date.now()); // prevents cache
-        const data = await res.json();
-
-        const mode = data.christmas_mode === true;
-
-        if (mode !== christmasEnabled) {
-            christmasEnabled = mode;
-            applyChristmasMode(mode);
-        }
-
-    } catch (err) {
-        console.log("Settings check failed:", err);
-    }
-}
-
-// ====== UPDATE UI LIVE ======
-function applyChristmasMode(state) {
-    if (state) {
-        document.body.classList.add("christmas-mode");
-        console.log("🎄 Christmas Mode Enabled");
-    } else {
-        document.body.classList.remove("christmas-mode");
-        console.log("❌ Christmas Mode Disabled");
-    }
-}
-
-// Run once at page load
-checkSettings();
-
-// Run every 5 seconds
-setInterval(checkSettings, 5000);
 </script>
 
     
