@@ -5,7 +5,7 @@
      crossorigin="anonymous"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FM Radio Player — MoonLitGames</title>
+<title>FM Continuum — MoonLitGames</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     <!-- =========================
      Discord / Open Graph Embed
@@ -14,7 +14,11 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MoonLitGames">
-<meta property="og:title" content="🎧 FM Radio Player — Smart, Self-Healing Live Radio">
+<meta property="og:title" content=" FM Continuum — Smart, Self-Healing Live Radio">
+
+    <meta property="og:image" content="https://fmradio.media/fm-continuum-embed.png">
+
+    
 <meta property="og:description" content="A next-gen browser radio player with automatic stream recovery, favorites, sleep timers, diagnostics, and modern UI. Built by MoonLitGames.">
 <meta property="og:url" content="https://fmradio.media">
 
@@ -22,7 +26,7 @@
 <meta name="theme-color" content="#00c6ff">
 
 <!-- SEO / fallback (still text-only) -->
-<meta name="description" content="FM Radio Player by MoonLitGames — a modern, self-healing live radio web app with favorites, auto-reconnect, sleep timers, and advanced diagnostics.">
+<meta name="description" content="FM Continuum by MoonLitGames — a modern, self-healing live radio web app with favorites, auto-reconnect, sleep timers, and advanced diagnostics.">
 
 <style>
   /* ===== Device-aware UI presets ===== */
@@ -187,7 +191,7 @@ input[type="search"],input[type="text"],input[type="url"],select{
     <!-- Login Modal -->
 <dialog id="loginDialog">
   <form id="loginForm" method="dialog">
-    <h3>Login to FM Radio Player</h3>
+    <h3>Login to FM Continuum</h3>
     <input id="username" name="username" placeholder="Username" required>
     <input id="password" name="password" type="password" placeholder="Password" required>
     <div style="display:flex;gap:8px;margin-top:12px;">
@@ -251,7 +255,7 @@ input[type="search"],input[type="text"],input[type="url"],select{
 
     
     <div class="topbar" aria-label="Top Controls">
-      <div class="brand">🎧 FM Radio Player</div>
+      <div class="brand">FM Continuum</div>
       <span class="tag">Self-healing streams</span>
       <span class="tag">Error codes</span>
       <span class="tag">Favorites</span>
@@ -341,7 +345,7 @@ form.addEventListener('submit', async (e) => {
 </script>
 
 
-  <footer>© 2025 FM Radio Player. All rights reserved.</footer>
+  <footer>© 2025 MoonLitGames Technology. All rights reserved worldwide.</footer>
   <div class="toast" id="toast"></div>
 
   <!-- Add/Edit Station Dialog -->
@@ -1717,7 +1721,7 @@ maybeAutoShowChangelog();
    Redirects or embeds TermsFeed page
 ============================= */
 if (window.location.pathname === "/terms") {
-  document.title = "Terms and Conditions — FM Radio Player";
+  document.title = "Terms and Conditions — FM Continuum";
 
   // Option 1: Embed the TermsFeed live page directly
   document.body.innerHTML = `
@@ -1924,7 +1928,7 @@ function createAuthOverlay() {
     text-align:center;
   `;
   overlay.innerHTML = `
-    <h2 style="margin-bottom:10px;">🔐 Please log in to access FM Radio Player</h2>
+    <h2 style="margin-bottom:10px;">🔐 Please log in to access FM Continuum</h2>
     <button id="unlockLoginBtn" class="btn main" style="padding:10px 20px;">Login</button>
   `;
   document.body.appendChild(overlay);
