@@ -8,7 +8,7 @@
 <title>FM Radio Player — MoonLitGames</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Irish+Grover&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 
 /* ===========================
@@ -66,7 +66,7 @@
 }
 
 
-  .xmas-fall {
+  .clover-fall {
   position: fixed;
   top: -40px;
   left: 0;
@@ -76,14 +76,14 @@
   z-index: 1;
 }
 
-.xmas-icon {
+.clover-icon {
   position: absolute;
   font-size: 22px;
   opacity: 0.6;
-  animation: xmasDrop 14s linear infinite;
+  animation: cloverDrop 14s linear infinite;
 }
 
-@keyframes xmasDrop {
+@keyframes cloverDrop {
   0% { transform: translateY(-40px); }
   100% { transform: translateY(110vh); }
 }
@@ -94,15 +94,15 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 14px;
+  height: 16px;
   background: repeating-linear-gradient(
     45deg,
-    #c00,
-    #c00 10px,
-    #fff 10px,
-    #fff 20px,
-    #0a0 20px,
-    #0a0 30px
+    #0f7b3a,
+    #0f7b3a 12px,
+    #f6d26a 12px,
+    #f6d26a 24px,
+    #1aa355 24px,
+    #1aa355 36px
   );
   z-index: 3;
 }
@@ -114,7 +114,7 @@ body::after {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('https://i.imgur.com/cMey1uO.png');
+  background: url('https://i.imgur.com/2qv7r8e.png');
   background-repeat: no-repeat;
   background-position: top center;
   opacity: 0.12;
@@ -123,7 +123,7 @@ body::after {
 
 
 
-/* 🎄 Christmas Accent Colors ONLY (UI stays identical) */
+/* ☘️ St. Patrick's Accent Colors ONLY (UI stays identical) */
 :root{
   --hit:40px;
   --radius:14px;
@@ -131,12 +131,12 @@ body::after {
   --text-scale:1;
   --density:1;
 
-  /* 🎄 Christmas Colors (subtle, not UI-breaking) */
-  --accent:#e63946;      /* soft red */
-  --accent-2:#aee1ff;    /* icy blue */
+  /* ☘️ St. Patrick's Colors (subtle, not UI-breaking) */
+  --accent:#21b573;      /* emerald */
+  --accent-2:#8fe9b0;    /* mint */
   --red:#ff5c5c;         /* error */
-  --green:#42d18c;       /* success */
-  --amber:#ffd86b;       /* warning */
+  --green:#2ec27e;       /* success */
+  --amber:#f4c542;       /* warning */
 
   /* keep your originals unchanged */
 }
@@ -160,15 +160,15 @@ body::after {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  background-image: url('https://i.imgur.com/LsrtxpK.png'); 
-  opacity: 0.08;
+  background-image: url('https://i.imgur.com/NRmTq7g.png'); 
+  opacity: 0.1;
   mix-blend-mode: screen;
   z-index: 1;
 }
 
 
-/* ===== Snowfall Background ===== */
-.snow {
+/* ===== Clover Confetti Background ===== */
+.confetti {
   pointer-events: none;
   position: fixed;
   top: 0;
@@ -179,26 +179,79 @@ body::after {
   z-index: 0; /* keep behind everything */
 }
 
-.snowflake {
+.confetti-piece {
   position: absolute;
   top: -10px;
-  color: white;
-  font-size: 12px;
-  opacity: 0.9;
-  animation: fall 10s linear infinite;
+  color: #d8f7e3;
+  font-size: 14px;
+  opacity: 0.85;
+  animation: fall 12s linear infinite;
 }
 
 /* Randomized positions + delays */
-.snowflake:nth-child(1)  { left: 5%;  animation-delay: 0s;  }
-.snowflake:nth-child(2)  { left: 15%; animation-delay: 2s;  }
-.snowflake:nth-child(3)  { left: 25%; animation-delay: 4s;  }
-.snowflake:nth-child(4)  { left: 35%; animation-delay: 1s;  }
-.snowflake:nth-child(5)  { left: 45%; animation-delay: 5s;  }
-.snowflake:nth-child(6)  { left: 55%; animation-delay: 3s;  }
-.snowflake:nth-child(7)  { left: 65%; animation-delay: 0.5s;}
-.snowflake:nth-child(8)  { left: 75%; animation-delay: 2.5s;}
-.snowflake:nth-child(9)  { left: 85%; animation-delay: 1.7s;}
-.snowflake:nth-child(10) { left: 95%; animation-delay: 3.8s;}
+.confetti-piece:nth-child(1)  { left: 5%;  animation-delay: 0s;  }
+.confetti-piece:nth-child(2)  { left: 15%; animation-delay: 2s;  }
+.confetti-piece:nth-child(3)  { left: 25%; animation-delay: 4s;  }
+.confetti-piece:nth-child(4)  { left: 35%; animation-delay: 1s;  }
+.confetti-piece:nth-child(5)  { left: 45%; animation-delay: 5s;  }
+.confetti-piece:nth-child(6)  { left: 55%; animation-delay: 3s;  }
+.confetti-piece:nth-child(7)  { left: 65%; animation-delay: 0.5s;}
+.confetti-piece:nth-child(8)  { left: 75%; animation-delay: 2.5s;}
+.confetti-piece:nth-child(9)  { left: 85%; animation-delay: 1.7s;}
+.confetti-piece:nth-child(10) { left: 95%; animation-delay: 3.8s;}
+.confetti-piece:nth-child(11) { left: 8%;  animation-delay: 1.2s;}
+.confetti-piece:nth-child(12) { left: 28%; animation-delay: 2.9s;}
+.confetti-piece:nth-child(13) { left: 58%; animation-delay: 4.6s;}
+.confetti-piece:nth-child(14) { left: 78%; animation-delay: 1.8s;}
+.confetti-piece:nth-child(15) { left: 92%; animation-delay: 0.8s;}
+
+.stp-banner {
+  position: relative;
+  z-index: 4;
+  margin: 10px auto 0;
+  max-width: 1200px;
+  background: linear-gradient(120deg, #0f3d1e, #1aa355);
+  border: 1px solid rgba(244, 197, 66, 0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  color: #e6fff2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+.stp-banner h1 {
+  font-family: 'Irish Grover', system-ui;
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.stp-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stp-badge {
+  background: rgba(15, 125, 58, 0.5);
+  border: 1px solid rgba(244, 197, 66, 0.45);
+  color: #f6f2d0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.stp-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 80% 10%, rgba(142, 233, 176, 0.25), transparent 45%),
+              radial-gradient(circle at 10% 90%, rgba(244, 197, 66, 0.18), transparent 40%);
+  z-index: 0;
+}
 
 @keyframes fall {
   0% {
@@ -434,7 +487,7 @@ body::after {
     background:
       
       linear-gradient(120deg, #b30000, #006400, #d6d5d1);
-    color:var(--txt);font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+    color:var(--txt);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
     min-height:100vh;display:flex;flex-direction:column;gap:20px;padding:22px
   }
   header{max-width:1200px;margin:0 auto;width:100%}
@@ -499,26 +552,46 @@ body::after {
     
 <body>
 
-<div class="snow">
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
-  <div class="snowflake">❆</div>
-  <div class="snowflake">❅</div>
+<div class="stp-glow"></div>
+<div class="confetti">
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
 </div>
 
 <div class="ribbon"></div>
-<div class="xmas-fall">
-  <div class="xmas-icon" style="left:10%">🎄</div>
-  <div class="xmas-icon" style="left:30%">⭐</div>
-  <div class="xmas-icon" style="left:50%">🎁</div>
-  <div class="xmas-icon" style="left:70%">❄️</div>
-  <div class="xmas-icon" style="left:85%">🔔</div>
+<div class="clover-fall">
+  <div class="clover-icon" style="left:8%">☘️</div>
+  <div class="clover-icon" style="left:22%">🍀</div>
+  <div class="clover-icon" style="left:36%">✨</div>
+  <div class="clover-icon" style="left:50%">☘️</div>
+  <div class="clover-icon" style="left:64%">🍀</div>
+  <div class="clover-icon" style="left:78%">✨</div>
+  <div class="clover-icon" style="left:90%">☘️</div>
+</div>
+
+<div class="stp-banner">
+  <div>
+    <h1>St. Patrick's Day Soundscape</h1>
+    <div style="font-size:.85rem;opacity:.9;">Lucky vibes, emerald glow, and a parade of fresh stations.</div>
+  </div>
+  <div class="stp-badges">
+    <span class="stp-badge">☘️ Clover Mode</span>
+    <span class="stp-badge">🌈 Pot of Gold EQ</span>
+    <span class="stp-badge">🎺 Parade Ready</span>
+  </div>
 </div>
 
 
@@ -2047,23 +2120,22 @@ if ('mediaSession' in navigator){
 /* ===== Changelog / Patch Notes ===== */
 const PATCH_NOTES = [
   {
-    version: '2.3.0',
-    date: '2025-12-01',
+    version: '2.3.1',
+    date: '2026-03-01',
     highlights: [
-      '🎄 Christmas Update Released!',
-      'Added snow background with 10 randomized flakes.',
-      'Added falling emoji Christmas decorations (🎄 ⭐ 🎁 ❄️ 🔔).',
-      'Added animated ribbon accent at the top of the page.',
-      'Added sparkle & pine-branch holiday overlay.',
-      'Added full automatic Christmas color theme (reds / greens / icy blues).',
-      'Added holiday login page gradient makeover.',
-      'Improved performance of snow and visual layers (GPU-friendly).',
-      'No UI or layout changes — fully cosmetic holiday mode.'
+      '☘️ St. Patrick’s Day theme released!',
+      'Added clover confetti with extra layers for deeper depth.',
+      'Added emerald-gold ribbon accent and shimmering glow overlays.',
+      'Added falling shamrock parade icons with new motion.',
+      'Added lucky banner with seasonal badges on the main page.',
+      'Swapped seasonal typography to Irish Grover + Inter.',
+      'Updated accent colors to emerald, mint, and gold.',
+      'No UI or layout changes — fully cosmetic seasonal mode.'
     ],
     fixes: [
-      'Optimized background layers so login dialog stays crisp.',
-      'Improved layering order so snow never blocks UI clicks.',
-      'Fixed rare issue where holiday overlays loaded twice.'
+      'Improved overlay layering so confetti never blocks UI clicks.',
+      'Balanced background glow opacity for better contrast.',
+      'Smoothed animation timing for falling clovers.'
     ]
   },
 
@@ -2154,7 +2226,7 @@ if (window.location.pathname === "/terms") {
         height: 100%;
         background: #0a0c10;
         color: #e9eef3;
-        font-family: "Poppins", system-ui, sans-serif;
+        font-family: "Inter", system-ui, sans-serif;
       }
       iframe {
         border: none;
@@ -2346,7 +2418,7 @@ function createAuthOverlay() {
     align-items:center;
     justify-content:center;
     color:white;
-    font-family:'Poppins',sans-serif;
+    font-family:'Inter',sans-serif;
     z-index:999999;
     text-align:center;
   `;
@@ -2422,7 +2494,7 @@ function showBanOverlay() {
     justify-content:center;
     color:white;
     text-align:center;
-    font-family:'Poppins',sans-serif;
+    font-family:'Inter',sans-serif;
   `;
   overlay.innerHTML = `
     <div style="max-width:480px;padding:30px;background:#17191e;border:1px solid #333;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
