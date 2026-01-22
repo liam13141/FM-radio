@@ -188,7 +188,7 @@ body::after {
   color: #d8f7e3;
   font-size: 14px;
   opacity: 0.85;
-  animation: fall 12s linear infinite, sway 4s ease-in-out infinite;
+  animation: fall 12s linear infinite;
 }
 
 /* Randomized positions + delays */
@@ -327,11 +327,6 @@ body::after {
 @keyframes sparklePulse {
   0%, 100% { opacity: 0.08; }
   50% { opacity: 0.18; }
-}
-
-@keyframes sway {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(14px); }
 }
 
 @keyframes bannerShine {
