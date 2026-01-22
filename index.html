@@ -1877,23 +1877,6 @@ function disableAudDRecognition(player) {
 }
 
 
-function enableAudDRecognition(player) {
-  if (!player.station || !player.station.src) return;
-  if (player._audDInterval) clearInterval(player._audDInterval);
-
-  player._audDInterval = setInterval(() => {
-    recognizeFromStream(player.station.src);
-  }, 60000); // every 60s
-}
-
-function disableAudDRecognition(player) {
-  if (player._audDInterval) {
-    clearInterval(player._audDInterval);
-    player._audDInterval = null;
-  }
-}
-
-
 const API_BASE = "https://login-api-iwy1.onrender.com"; // change to your domain when hosted
 
 const loginDialog = document.getElementById("loginDialog");
