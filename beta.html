@@ -104,6 +104,8 @@
     #1aa355 24px,
     #1aa355 36px
   );
+  background-size: 240px 100%;
+  animation: ribbonShift 8s linear infinite;
   z-index: 3;
 }
 
@@ -298,6 +300,30 @@ body::after {
   animation: glowShift 10s ease-in-out infinite;
 }
 
+.stp-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stp-orb {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(142, 233, 176, 0.4), transparent 65%);
+  filter: blur(2px);
+  opacity: 0.35;
+  animation: orbFloat 14s ease-in-out infinite;
+}
+
+.stp-orb:nth-child(1) { left: 8%; top: 15%; animation-delay: 0s; }
+.stp-orb:nth-child(2) { left: 78%; top: 20%; animation-delay: 2s; }
+.stp-orb:nth-child(3) { left: 18%; top: 70%; animation-delay: 4s; }
+.stp-orb:nth-child(4) { left: 70%; top: 65%; animation-delay: 6s; }
+.stp-orb:nth-child(5) { left: 45%; top: 35%; animation-delay: 8s; }
+
 @keyframes sparklePulse {
   0%, 100% { opacity: 0.08; }
   50% { opacity: 0.18; }
@@ -324,6 +350,11 @@ body::after {
   100% { transform: translateX(-100%); }
 }
 
+@keyframes ribbonShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 240px 0; }
+}
+
 @keyframes glowShift {
   0%, 100% { filter: hue-rotate(0deg); }
   50% { filter: hue-rotate(12deg); }
@@ -332,6 +363,11 @@ body::after {
 @keyframes emeraldFlow {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  50% { transform: translateY(-18px) translateX(12px) scale(1.05); }
 }
 
 @keyframes fall {
@@ -589,7 +625,7 @@ body::after {
   input[type="search"]{min-width:240px;flex:1}
   .badge{padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:var(--panel-2);font-size:.78rem}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;max-width:1200px;margin:0 auto;width:100%}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;outline:none}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow), 0 0 0 1px rgba(33, 181, 115, 0.08);padding:16px;display:flex;flex-direction:column;gap:12px;outline:none}
   .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .logo{inline-size:60px;block-size:60px;border-radius:50%;display:grid;place-items:center;font-weight:700;
         background:radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent));color:#0b0c0f;
@@ -637,6 +673,13 @@ body::after {
 <body>
 
 <div class="stp-glow"></div>
+<div class="stp-orbs" aria-hidden="true">
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+</div>
 <div class="confetti">
   <div class="confetti-piece">☘️</div>
   <div class="confetti-piece">🍀</div>
@@ -2235,6 +2278,7 @@ const PATCH_NOTES = [
       'Swapped seasonal typography to Irish Grover + Inter.',
       'Updated accent colors to emerald, mint, and gold.',
       'Introduced an animated emerald background gradient.',
+      'Added floating glow orbs and animated ribbon shimmer.',
       'No UI or layout changes — fully cosmetic seasonal mode.'
     ],
     fixes: [
