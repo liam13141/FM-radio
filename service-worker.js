@@ -1,4 +1,4 @@
-const CACHE_NAME = "fmradio-v2";
+const CACHE_NAME = "fmradio-v4";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {

@@ -104,6 +104,8 @@
     #1aa355 24px,
     #1aa355 36px
   );
+  background-size: 240px 100%;
+  animation: ribbonShift 8s linear infinite;
   z-index: 3;
 }
 
@@ -164,6 +166,7 @@ body::after {
   opacity: 0.1;
   mix-blend-mode: screen;
   z-index: 1;
+  animation: sparklePulse 6s ease-in-out infinite;
 }
 
 
@@ -204,6 +207,15 @@ body::after {
 .confetti-piece:nth-child(13) { left: 58%; animation-delay: 4.6s;}
 .confetti-piece:nth-child(14) { left: 78%; animation-delay: 1.8s;}
 .confetti-piece:nth-child(15) { left: 92%; animation-delay: 0.8s;}
+.confetti-piece:nth-child(16) { left: 12%; animation-delay: 3.2s;}
+.confetti-piece:nth-child(17) { left: 32%; animation-delay: 0.6s;}
+.confetti-piece:nth-child(18) { left: 52%; animation-delay: 2.1s;}
+.confetti-piece:nth-child(19) { left: 72%; animation-delay: 3.6s;}
+.confetti-piece:nth-child(20) { left: 88%; animation-delay: 4.2s;}
+.confetti-piece:nth-child(21) { left: 18%; animation-delay: 1.5s;}
+.confetti-piece:nth-child(22) { left: 38%; animation-delay: 2.7s;}
+.confetti-piece:nth-child(23) { left: 62%; animation-delay: 0.9s;}
+.confetti-piece:nth-child(24) { left: 82%; animation-delay: 3.9s;}
 
 .stp-banner {
   position: relative;
@@ -220,6 +232,17 @@ body::after {
   justify-content: space-between;
   gap: 12px;
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+.stp-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, transparent, rgba(244, 197, 66, 0.25), transparent);
+  opacity: 0.6;
+  animation: bannerShine 6s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .stp-banner h1 {
@@ -242,6 +265,29 @@ body::after {
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.78rem;
+  animation: badgeFloat 3.2s ease-in-out infinite;
+}
+
+.stp-marquee {
+  position: relative;
+  z-index: 4;
+  max-width: 1200px;
+  margin: 8px auto 0;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 197, 66, 0.3);
+  background: rgba(10, 61, 30, 0.6);
+  color: #e6fff2;
+  padding: 6px 0;
+}
+
+.stp-marquee span {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: marqueeScroll 18s linear infinite;
+  font-size: 0.85rem;
+  letter-spacing: 0.4px;
 }
 
 .stp-glow {
@@ -251,6 +297,72 @@ body::after {
   background: radial-gradient(circle at 80% 10%, rgba(142, 233, 176, 0.25), transparent 45%),
               radial-gradient(circle at 10% 90%, rgba(244, 197, 66, 0.18), transparent 40%);
   z-index: 0;
+  animation: glowShift 10s ease-in-out infinite;
+}
+
+.stp-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stp-orb {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(142, 233, 176, 0.4), transparent 65%);
+  filter: blur(2px);
+  opacity: 0.35;
+  animation: orbFloat 14s ease-in-out infinite;
+}
+
+.stp-orb:nth-child(1) { left: 8%; top: 15%; animation-delay: 0s; }
+.stp-orb:nth-child(2) { left: 78%; top: 20%; animation-delay: 2s; }
+.stp-orb:nth-child(3) { left: 18%; top: 70%; animation-delay: 4s; }
+.stp-orb:nth-child(4) { left: 70%; top: 65%; animation-delay: 6s; }
+.stp-orb:nth-child(5) { left: 45%; top: 35%; animation-delay: 8s; }
+
+@keyframes sparklePulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.18; }
+}
+
+@keyframes bannerShine {
+  0% { transform: translateX(-35%); opacity: 0.1; }
+  50% { opacity: 0.6; }
+  100% { transform: translateX(35%); opacity: 0.1; }
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes ribbonShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 240px 0; }
+}
+
+@keyframes glowShift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(12deg); }
+}
+
+@keyframes emeraldFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  50% { transform: translateY(-18px) translateX(12px) scale(1.05); }
 }
 
 @keyframes fall {
@@ -485,6 +597,11 @@ body::after {
   html,body{height:100%}
   body{
     background:
+      radial-gradient(circle at 20% 20%, rgba(36, 165, 104, 0.35), transparent 45%),
+      radial-gradient(circle at 80% 80%, rgba(244, 197, 66, 0.25), transparent 40%),
+      linear-gradient(120deg, #0b3d1a, #116f3a, #1f8a4c);
+    background-size: 200% 200%;
+    animation: emeraldFlow 18s ease-in-out infinite;
       
       linear-gradient(120deg, #b30000, #006400, #d6d5d1);
     color:var(--txt);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
@@ -505,7 +622,7 @@ body::after {
   input[type="search"]{min-width:240px;flex:1}
   .badge{padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:var(--panel-2);font-size:.78rem}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;max-width:1200px;margin:0 auto;width:100%}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;outline:none}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow), 0 0 0 1px rgba(33, 181, 115, 0.08);padding:16px;display:flex;flex-direction:column;gap:12px;outline:none}
   .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .logo{inline-size:60px;block-size:60px;border-radius:50%;display:grid;place-items:center;font-weight:700;
         background:radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent));color:#0b0c0f;
@@ -553,7 +670,23 @@ body::after {
 <body>
 
 <div class="stp-glow"></div>
+<div class="stp-orbs" aria-hidden="true">
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+  <span class="stp-orb"></span>
+</div>
 <div class="confetti">
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
+  <div class="confetti-piece">☘️</div>
+  <div class="confetti-piece">🍀</div>
+  <div class="confetti-piece">✨</div>
   <div class="confetti-piece">☘️</div>
   <div class="confetti-piece">🍀</div>
   <div class="confetti-piece">✨</div>
@@ -580,6 +713,11 @@ body::after {
   <div class="clover-icon" style="left:64%">🍀</div>
   <div class="clover-icon" style="left:78%">✨</div>
   <div class="clover-icon" style="left:90%">☘️</div>
+  <div class="clover-icon" style="left:14%">🍀</div>
+  <div class="clover-icon" style="left:44%">✨</div>
+  <div class="clover-icon" style="left:58%">☘️</div>
+  <div class="clover-icon" style="left:72%">🍀</div>
+  <div class="clover-icon" style="left:96%">✨</div>
 </div>
 
 <div class="stp-banner">
@@ -591,6 +729,12 @@ body::after {
     <span class="stp-badge">☘️ Clover Mode</span>
     <span class="stp-badge">🌈 Pot of Gold EQ</span>
     <span class="stp-badge">🎺 Parade Ready</span>
+    <span class="stp-badge">🥁 Festival Beats</span>
+  </div>
+</div>
+
+<div class="stp-marquee" aria-hidden="true">
+  <span>☘️ Luck is in the air · Emerald playlists · Golden hour grooves · Clover confetti · Parade-ready stations · Shine on ☘️</span>
   </div>
 </div>
 
@@ -2128,6 +2272,11 @@ const PATCH_NOTES = [
       'Added emerald-gold ribbon accent and shimmering glow overlays.',
       'Added falling shamrock parade icons with new motion.',
       'Added lucky banner with seasonal badges on the main page.',
+      'Added a rolling parade marquee with festive messaging.',
+      'Swapped seasonal typography to Irish Grover + Inter.',
+      'Updated accent colors to emerald, mint, and gold.',
+      'Introduced an animated emerald background gradient.',
+      'Added floating glow orbs and animated ribbon shimmer.',
       'Swapped seasonal typography to Irish Grover + Inter.',
       'Updated accent colors to emerald, mint, and gold.',
       'No UI or layout changes — fully cosmetic seasonal mode.'
