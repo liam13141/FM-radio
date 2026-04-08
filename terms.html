@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Terms and Conditions — FM Radio Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms & Conditions — FM Continuum</title>
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #0a0c10;
-    }
-    iframe {
-      border: none;
-      width: 100%;
-      height: 100%;
-    }
+    html,body{margin:0;height:100%;background:#070d16;font-family:Inter,system-ui,sans-serif}
+    .top{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#0e1829;border-bottom:1px solid #24324a;z-index:2}
+    .top a{color:#03121f;text-decoration:none;background:#5bd0ff;padding:8px 12px;border-radius:10px;font-weight:700}
+    .top span{color:#e8eef9;font-weight:600}
+    iframe{border:none;width:100%;height:calc(100% - 50px);margin-top:50px}
   </style>
 </head>
 <body>
+  <div class="top"><span>Terms & Conditions</span><a href="/">Back</a></div>
   <iframe src="https://www.termsfeed.com/live/5dce8a1d-4495-46a7-9676-470ddedcfc4f" title="Terms and Conditions"></iframe>
 </body>
 </html>
